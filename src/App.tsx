@@ -112,7 +112,7 @@ export function App() {
   const totalVaultCount = manifest.reduce((acc, m) => acc + m.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-void text-bone-100 flex flex-col selection:bg-ember-500 selection:text-white overflow-x-hidden">
+    <div className="relative min-h-screen bg-void text-bone-100 flex flex-col selection:bg-ember-500 selection:text-white">
       {/* 35mm Analog Film Grain Layer */}
       <div className="film-grain" />
 
