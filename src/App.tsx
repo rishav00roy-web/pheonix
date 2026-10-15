@@ -122,10 +122,9 @@ export function App() {
 
       {/* Main Content */}
       <main className="flex-1 w-full">
-        {/* Cinematic Mobile-First Hero Section */}
+        {/* High-Fashion Centered Apparel Hero */}
         <Hero
           onExploreClick={scrollToCatalog}
-          onOpenFlagship={() => setSelectedProduct(PRODUCTS[0])}
           onSelectCategory={(cat) => {
             setSelectedCategory(cat);
             scrollToCatalog();

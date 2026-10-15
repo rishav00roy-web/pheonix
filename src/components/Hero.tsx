@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDown, Sparkles, Compass, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ArrowDown, Compass } from 'lucide-react';
 import { soundManager } from '../utils/audio';
 
 interface HeroProps {
   onExploreClick: () => void;
-  onOpenFlagship: () => void;
   onSelectCategory: (cat: string) => void;
   selectedCategory: string;
 }
@@ -36,9 +35,18 @@ const RUNWAY_LOOKS = [
   }
 ];
 
+const CATEGORIES = [
+  { id: 'all', label: 'All (14)' },
+  { id: 'outerwear', label: 'Outerwear (3)' },
+  { id: 'tops', label: 'Knits & Tops (3)' },
+  { id: 'dresses', label: 'Column Dresses (2)' },
+  { id: 'trousers', label: 'Trousers (2)' },
+  { id: 'footwear', label: 'Footwear (2)' },
+  { id: 'accessories', label: 'Accessories (2)' }
+];
+
 export const Hero: React.FC<HeroProps> = ({
   onExploreClick,
-  onOpenFlagship,
   onSelectCategory,
   selectedCategory
 }) => {
@@ -52,26 +60,6 @@ export const Hero: React.FC<HeroProps> = ({
     }, 7000);
     return () => clearInterval(timer);
   }, []);
-
-  const handlePrevLook = () => {
-    soundManager.playClick();
-    setActiveLookIndex((prev) => (prev - 1 + RUNWAY_LOOKS.length) % RUNWAY_LOOKS.length);
-  };
-
-  const handleNextLook = () => {
-    soundManager.playClick();
-    setActiveLookIndex((prev) => (prev + 1) % RUNWAY_LOOKS.length);
-  };
-
-  const categories = [
-    { id: 'all', label: 'All (14)' },
-    { id: 'outerwear', label: 'Outerwear (3)' },
-    { id: 'tops', label: 'Knits & Tops (3)' },
-    { id: 'dresses', label: 'Column Dresses (2)' },
-    { id: 'trousers', label: 'Trousers (2)' },
-    { id: 'footwear', label: 'Footwear (2)' },
-    { id: 'accessories', label: 'Accessories (2)' }
-  ];
 
   return (
     <section className="relative min-h-[94svh] sm:min-h-screen w-full flex flex-col justify-between p-5 sm:p-12 overflow-hidden border-b border-white/[0.08] bg-void">
@@ -94,97 +82,91 @@ export const Hero: React.FC<HeroProps> = ({
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[340px] sm:w-[680px] h-[340px] sm:h-[680px] bg-ember-600/10 blur-[150px] rounded-full pointer-events-none" />
       </div>
 
-      {/* Top Technical Metadata Header */}
-      <div className="pt-20 sm:pt-16 flex items-center justify-between text-[10px] font-mono tracking-[0.3em] text-zinc-400 uppercase z-10 w-full">
+      {/* Top Technical Metadata Header (Symmetrical & Centered) */}
+      <div className="pt-20 sm:pt-16 flex items-center justify-between text-[10px] font-mono tracking-[0.3em] text-zinc-400 uppercase z-10 w-full max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-ember-500 animate-pulse" />
           <span className="text-white font-bold">ATELIER PHEONIX</span>
-          <span className="text-zinc-600 hidden sm:inline">//</span>
-          <span className="text-zinc-400 hidden sm:inline">AUTUMN / WINTER 2026</span>
         </div>
 
-        {/* Minimalist Look Indicator Pill */}
-        <div className="flex items-center gap-2 font-mono text-[9px] sm:text-[10px] text-zinc-400">
-          <button
-            onClick={handlePrevLook}
-            className="p-1 rounded hover:bg-white/10 hover:text-white transition-colors"
-            title="Previous Look"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
+        {/* Centered Look Switcher Indicators */}
+        <div className="flex items-center gap-2.5">
+          {RUNWAY_LOOKS.map((look, idx) => (
+            <button
+              key={look.id}
+              onClick={() => {
+                soundManager.playClick();
+                setActiveLookIndex(idx);
+              }}
+              className={`transition-all h-1 rounded-full ${
+                activeLookIndex === idx
+                  ? 'w-8 bg-white'
+                  : 'w-2 bg-white/30 hover:bg-white/60'
+              }`}
+              title={look.title}
+            />
+          ))}
+        </div>
+
+        <div className="font-mono text-[9px] sm:text-[10px] text-zinc-400">
           <span className="text-white font-bold">{currentLook.code}</span>
-          <span className="text-zinc-600">/ 03</span>
-          <button
-            onClick={handleNextLook}
-            className="p-1 rounded hover:bg-white/10 hover:text-white transition-colors"
-            title="Next Look"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <span className="text-zinc-600"> / 03</span>
         </div>
       </div>
 
-      {/* Centerpiece: Clean, Imposing Brand Monolith */}
-      <div className="my-auto z-10 w-full max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 pt-4">
-        {/* Official Cyber-Phoenix Crest */}
-        <div className="relative inline-flex items-center justify-center mx-auto group">
-          <div className="absolute inset-0 bg-ember-500/20 blur-2xl rounded-full scale-125 pointer-events-none" />
-          <div className="absolute inset-0 bg-purple-600/20 blur-3xl rounded-full scale-150 pointer-events-none" />
-          <img
-            src="/brand-logo.png"
-            alt="Pheonix Brand Crest"
-            className="relative w-36 sm:w-52 md:w-64 h-auto mx-auto object-contain drop-shadow-[0_0_35px_rgba(249,115,22,0.45)] filter brightness-105 pointer-events-none transition-transform duration-700 group-hover:scale-105"
-          />
+      {/* Centerpiece: Clean, Imposing Brand Monolith (Dead-Centered, No Middle Logo) */}
+      <div className="my-auto z-10 w-full max-w-5xl mx-auto text-center space-y-5 sm:space-y-6 pt-4">
+        {/* Collection Kicker */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-white/10 bg-black/40 backdrop-blur-md text-[10px] sm:text-[11px] font-mono tracking-[0.3em] uppercase text-ember-400 mx-auto">
+          <span>AUTUMN / WINTER 2026</span>
+          <span className="text-zinc-600">•</span>
+          <span>COLLECTION 01</span>
         </div>
 
-        {/* Monolith Brand Typography */}
-        <div className="space-y-2">
-          <h1 className="font-syne font-black text-3xl sm:text-6xl md:text-8xl lg:text-9xl tracking-[0.14em] sm:tracking-[0.32em] uppercase text-white leading-none">
+        {/* Monumental Headline with Balanced Letter-Spacing */}
+        <div className="flex justify-center w-full">
+          <h1 className="font-syne font-black text-4xl sm:text-7xl md:text-8xl lg:text-9xl uppercase text-white leading-none tracking-[0.16em] sm:tracking-[0.32em] pl-[0.16em] sm:pl-[0.32em]">
             PHEONIX
           </h1>
-          <p className="font-mono text-[10px] sm:text-xs text-ember-400 uppercase tracking-[0.35em] font-semibold">
-            {currentLook.title} — {currentLook.subtitle}
+        </div>
+
+        {/* Editorial Subtitle */}
+        <div className="space-y-1.5">
+          <p className="font-mono text-[11px] sm:text-xs text-white uppercase tracking-[0.35em] font-bold">
+            {currentLook.title}
+          </p>
+          <p className="font-mono text-[10px] sm:text-[11px] text-ember-400/90 uppercase tracking-[0.25em]">
+            {currentLook.subtitle}
           </p>
         </div>
 
-        {/* Look Description / Atelier Manifesto */}
-        <p className="text-xs sm:text-sm text-zinc-300 font-light max-w-xl mx-auto leading-relaxed">
+        {/* Silhouette Description */}
+        <p className="text-xs sm:text-sm text-zinc-300 font-light max-w-lg mx-auto leading-relaxed">
           {currentLook.details}
         </p>
 
-        {/* Primary Call to Actions */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-sm sm:max-w-none mx-auto">
+        {/* Centered CTA */}
+        <div className="pt-2 flex items-center justify-center">
           <button
             onClick={() => {
               soundManager.playClick();
               onExploreClick();
             }}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white text-black font-mono font-bold text-xs uppercase tracking-[0.2em] hover:bg-ember-500 hover:text-white transition-all shadow-xl flex items-center justify-center gap-2 group"
+            className="px-8 sm:px-10 py-3.5 sm:py-4 rounded-full bg-white text-black font-mono font-bold text-xs uppercase tracking-[0.22em] hover:bg-ember-500 hover:text-white transition-all shadow-2xl flex items-center gap-2.5 group"
           >
             <span>Explore Collection (14)</span>
             <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" />
           </button>
-
-          <button
-            onClick={() => {
-              soundManager.playClick();
-              onOpenFlagship();
-            }}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-white font-mono text-xs uppercase tracking-[0.15em] hover:bg-white/10 hover:border-white/40 transition-all flex items-center justify-center gap-2"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-ember-400" />
-            <span>Inspect Flagship Piece</span>
-          </button>
         </div>
       </div>
 
-      {/* Bottom Horizontal Category Bar */}
+      {/* Bottom Horizontal Category Bar - Fully Centered */}
       <div className="pb-4 sm:pb-6 z-10 w-full max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-1">
+        <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto no-scrollbar py-2 px-2">
           <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mr-1 shrink-0 flex items-center gap-1">
             <Compass className="w-3 h-3 text-ember-400" /> WARDROBE:
           </span>
-          {categories.map((cat) => {
+          {CATEGORIES.map((cat) => {
             const isActive = selectedCategory === cat.id;
             return (
               <button
