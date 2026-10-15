@@ -16,33 +16,8 @@ export interface Product {
 
 export const PRODUCTS: Product[] = [
   {
-    id: 'chimera-maw-stiletto',
-    code: 'SPECIMEN 01',
-    name: 'The Chimera Maw Stilettos',
-    category: 'footwear',
-    categoryLabel: 'Footwear',
-    price: 1480,
-    edition: 'Edition of 25 Numbered Pairs',
-    tagline: 'Predatory monster jaw rear heel in obsidian patent & titanium',
-    materials: [
-      'Italian Obsidian Patent Calfskin',
-      'Articulating Titanium Monster Jaws & Fangs',
-      'Crimson Micro-Suede Velvet Throat Cushion',
-      '105mm Carbon-Reinforced Heel Shaft'
-    ],
-    description:
-      'The house’s legendary conversation piece. A razor stiletto silhouette punctuated at the rear heel pillar by an articulating predatory monster jaw with surgical titanium fangs and crimson velvet lining.',
-    imageUrl: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1200&q=85',
-    colors: [
-      { name: 'Obsidian Gloss', hex: '#0a0a0c' },
-      { name: 'Blood Chrome', hex: '#7f1d1d' },
-      { name: 'Bleached Bone', hex: '#e8e2d5' }
-    ],
-    sizes: ['36', '37', '38', '39', '40', '41']
-  },
-  {
     id: 'vortex-trench',
-    code: 'SPECIMEN 02',
+    code: 'SPECIMEN 01',
     name: 'Vortex Asymmetric Storm Trench',
     category: 'outerwear',
     categoryLabel: 'Outerwear',
@@ -66,7 +41,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'vertebral-biker',
-    code: 'SPECIMEN 03',
+    code: 'SPECIMEN 02',
     name: 'Vertebral Embossed Moto Jacket',
     category: 'outerwear',
     categoryLabel: 'Outerwear',
@@ -90,7 +65,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'cocoon-bomber',
-    code: 'SPECIMEN 04',
+    code: 'SPECIMEN 03',
     name: 'Basalt Cocoon Sculpted Bomber',
     category: 'outerwear',
     categoryLabel: 'Outerwear',
@@ -114,7 +89,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'liquid-column-gown',
-    code: 'SPECIMEN 05',
+    code: 'SPECIMEN 04',
     name: 'Liquid Obsidian Column Gown',
     category: 'dresses',
     categoryLabel: 'Dresses',
@@ -138,7 +113,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'carapace-corset-dress',
-    code: 'SPECIMEN 06',
+    code: 'SPECIMEN 05',
     name: 'Carapace Structured Corset Mini',
     category: 'dresses',
     categoryLabel: 'Dresses',
@@ -162,7 +137,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'phoenix-ash-knit',
-    code: 'SPECIMEN 07',
+    code: 'SPECIMEN 06',
     name: 'Ash Rebirth Deconstructed Mohair',
     category: 'tops',
     categoryLabel: 'Tops & Knits',
@@ -187,7 +162,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'hydra-cutout-top',
-    code: 'SPECIMEN 08',
+    code: 'SPECIMEN 07',
     name: 'Hydra Anatomical Cut-Out Top',
     category: 'tops',
     categoryLabel: 'Tops & Knits',
@@ -211,7 +186,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'chitin-cowl-hoodie',
-    code: 'SPECIMEN 09',
+    code: 'SPECIMEN 08',
     name: 'Chitin Architectural Cowl Hoodie',
     category: 'tops',
     categoryLabel: 'Tops & Knits',
@@ -235,7 +210,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'mantis-modular-cargo',
-    code: 'SPECIMEN 10',
+    code: 'SPECIMEN 09',
     name: 'Mantis Geometric Modular Trousers',
     category: 'trousers',
     categoryLabel: 'Trousers',
@@ -259,7 +234,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'vertebral-split-denim',
-    code: 'SPECIMEN 11',
+    code: 'SPECIMEN 10',
     name: 'Vertebral Slit Flared Denim',
     category: 'trousers',
     categoryLabel: 'Trousers',
@@ -283,7 +258,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'leviathan-lug-boot',
-    code: 'SPECIMEN 12',
+    code: 'SPECIMEN 11',
     name: 'Leviathan Vertebral Platform Boot',
     category: 'footwear',
     categoryLabel: 'Footwear',
@@ -304,6 +279,31 @@ export const PRODUCTS: Product[] = [
       { name: 'Oxide Grey', hex: '#374151' }
     ],
     sizes: ['37', '38', '39', '40', '41', '42', '44']
+  },
+  {
+    id: 'chimera-maw-stiletto',
+    code: 'SPECIMEN 12',
+    name: 'The Chimera Maw Stilettos',
+    category: 'footwear',
+    categoryLabel: 'Footwear',
+    price: 1480,
+    edition: 'Edition of 25 Numbered Pairs',
+    tagline: 'Predatory monster jaw rear heel in obsidian patent & titanium',
+    materials: [
+      'Italian Obsidian Patent Calfskin',
+      'Articulating Titanium Monster Jaws & Fangs',
+      'Crimson Micro-Suede Velvet Throat Cushion',
+      '105mm Carbon-Reinforced Heel Shaft'
+    ],
+    description:
+      'The house’s conversation piece. A razor stiletto punctuated at the heel by an articulating predatory monster jaw with surgical titanium fangs and crimson velvet lining.',
+    imageUrl: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1200&q=85',
+    colors: [
+      { name: 'Obsidian Gloss', hex: '#0a0a0c' },
+      { name: 'Blood Chrome', hex: '#7f1d1d' },
+      { name: 'Bleached Bone', hex: '#e8e2d5' }
+    ],
+    sizes: ['36', '37', '38', '39', '40', '41']
   },
   {
     id: 'molten-spine-harness',
