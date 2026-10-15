@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="20" fill="#030305"/>
+  <path d="M50 15L65 42L85 50L68 65L72 90L50 75L28 90L32 65L15 50L35 42Z" fill="url(#emberGrad)" stroke="#ff441f" stroke-width="2"/>
+  <!-- Monster Fangs Silhouette -->
+  <path d="M42 55L45 65L48 55M52 55L55 65L58 55" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="emberGrad" x1="50" y1="15" x2="50" y2="90" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff7849"/>
+      <stop offset="0.6" stop-color="#ff441f"/>
+      <stop offset="1" stop-color="#991b1b"/>
+    </linearGradient>
+  </defs>
+</svg>
