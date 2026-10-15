@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { X, Trash2, Plus, Minus, CheckCircle2 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import type { ManifestItem } from '../types';
 import { soundManager } from '../utils/audio';
 
@@ -33,26 +32,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     soundManager.playChime();
     setIsProcessing(true);
 
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#ff441f', '#ffffff', '#1e293b']
-      });
-    } catch {}
-
     setTimeout(() => {
       setManifestCode(`PHX-${Math.floor(100000 + Math.random() * 900000)}`);
       setIsProcessing(false);
       setOrderComplete(true);
       onClearCart();
-    }, 1500);
+    }, 1200);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-md bg-obsidian-950 text-white border-l border-white/10 h-full flex flex-col shadow-2xl">
+      <div className="relative w-full max-w-md bg-obsidian-950 text-white border-l border-white/15 h-full flex flex-col shadow-2xl">
         
         {/* Header */}
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
@@ -63,7 +53,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]"
             />
             <div>
-              <span className="font-syne font-bold text-base tracking-widest uppercase text-white block">
+              <span className="font-syne font-black text-base tracking-[0.2em] uppercase text-white block">
                 Acquisition Manifest
               </span>
               <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
@@ -74,7 +64,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full border border-white/10 hover:bg-white/10 text-zinc-400 hover:text-white transition-all"
+            className="p-1.5 border border-white/20 hover:bg-white hover:text-black text-zinc-400 transition-all"
             aria-label="Close manifest"
           >
             <X className="w-4 h-4" />
@@ -90,28 +80,28 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 alt="Pheonix Seal"
                 className="w-20 h-auto object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.45)] mx-auto mb-3"
               />
-              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
+              <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
             </div>
             <div>
-              <h3 className="font-syne font-bold text-xl uppercase tracking-wide">
-                Artefact Allocation Locked
+              <h3 className="font-syne font-black text-xl uppercase tracking-wider text-white">
+                Allocation Committed
               </h3>
               <p className="text-xs font-mono text-zinc-400 mt-2">
-                Your pieces are assigned to private courier dispatch.
+                Garment artefacts recorded to private secure dispatch.
               </p>
             </div>
-            <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] font-mono text-xs w-full">
-              <span className="text-zinc-500 block mb-1">Manifest Reference</span>
-              <span className="text-ember-400 font-bold text-sm tracking-widest">{manifestCode}</span>
+            <div className="p-4 border border-white/15 bg-black/60 font-mono text-xs w-full text-center">
+              <span className="text-zinc-500 block mb-1 text-[10px] uppercase tracking-widest">Manifest Reference ID</span>
+              <span className="text-ember-400 font-bold text-sm tracking-[0.25em]">{manifestCode}</span>
             </div>
             <button
               onClick={() => {
                 setOrderComplete(false);
                 onClose();
               }}
-              className="w-full py-3.5 rounded-xl bg-white text-black font-mono font-bold text-xs uppercase tracking-widest hover:bg-ember-500 hover:text-white transition-all"
+              className="w-full py-4 border border-white bg-white text-black font-mono font-bold text-xs uppercase tracking-[0.25em] hover:bg-ember-500 hover:border-ember-500 hover:text-white transition-all"
             >
               Return to Collection
             </button>
@@ -123,7 +113,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </span>
             <button
               onClick={onClose}
-              className="mt-4 px-6 py-2.5 rounded-full border border-white/20 text-xs text-white uppercase tracking-widest hover:border-white transition-all"
+              className="mt-4 px-6 py-2.5 border border-white/20 text-xs text-white uppercase tracking-widest hover:border-white hover:bg-white/10 transition-all font-bold"
             >
               Browse Wardrobe
             </button>
@@ -134,9 +124,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               {items.map((item, idx) => (
                 <div
                   key={`${item.product.id}-${item.size}-${item.color}-${idx}`}
-                  className="flex gap-4 p-3.5 rounded-2xl border border-white/[0.08] bg-white/[0.01]"
+                  className="flex gap-4 p-3.5 border border-white/10 bg-black/40"
                 >
-                  <div className="w-16 h-20 rounded-xl overflow-hidden bg-obsidian-900 shrink-0 border border-white/10">
+                  <div className="w-16 h-20 overflow-hidden bg-zinc-950 shrink-0 border border-white/10">
                     <img
                       src={item.product.imageUrl}
                       alt=""
@@ -164,7 +154,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center gap-2 border border-white/10 rounded-lg px-2 py-0.5 bg-white/5 text-xs font-mono">
+                      <div className="flex items-center gap-2 border border-white/15 px-2 py-0.5 bg-black/60 text-xs font-mono">
                         <button
                           onClick={() => onUpdateQuantity(item.product.id, item.size, item.color, item.quantity - 1)}
                           className="text-zinc-400 hover:text-white"
@@ -203,7 +193,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <button
                 onClick={handleCheckout}
                 disabled={isProcessing}
-                className="w-full mt-2 py-4 rounded-xl bg-white text-black font-mono font-bold text-xs uppercase tracking-[0.2em] hover:bg-ember-500 hover:text-white transition-all duration-300 disabled:opacity-50"
+                className="w-full mt-2 py-4 border border-white bg-white text-black font-mono font-bold text-xs uppercase tracking-[0.25em] hover:bg-ember-500 hover:border-ember-500 hover:text-white transition-all duration-300 disabled:opacity-50"
               >
                 {isProcessing ? 'CONFIRMING ALLOCATION...' : 'LOCK ACQUISITION'}
               </button>

@@ -113,6 +113,9 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-void text-bone-100 flex flex-col selection:bg-ember-500 selection:text-white overflow-x-hidden">
+      {/* 35mm Analog Film Grain Layer */}
+      <div className="film-grain" />
+
       {/* Sticky Hairline Top Navigation */}
       <Navbar
         cartCount={totalVaultCount}

@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundManager.playClick();
               onScrollToCatalog();
             }}
-            className="flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-white/10 bg-white/[0.03] text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-zinc-300 hover:text-white hover:border-white/30 transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 border border-white/15 bg-black/60 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-zinc-300 hover:text-white hover:border-white/40 transition-all"
           >
             <Sparkles className="w-3 h-3 text-ember-400" />
             <span>Wardrobe (14)</span>
@@ -65,10 +65,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Ambient Drone Toggle */}
           <button
             onClick={toggleSound}
-            className={`flex items-center gap-1.5 p-1.5 sm:py-1.5 sm:px-3 rounded-full border text-[10px] uppercase tracking-widest transition-all ${
+            className={`flex items-center gap-1.5 p-1.5 sm:py-1.5 sm:px-3 border text-[10px] uppercase tracking-widest transition-all ${
               isAudioActive
                 ? 'border-ember-500/60 bg-ember-500/10 text-ember-400'
-                : 'border-white/10 text-zinc-500 hover:text-white hover:border-white/25'
+                : 'border-white/15 bg-black/40 text-zinc-400 hover:text-white hover:border-white/30'
             }`}
             title={isAudioActive ? 'Atmospheric Drone Active' : 'Sound Muted'}
           >

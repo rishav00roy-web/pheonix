@@ -32,7 +32,7 @@ export const PRODUCTS: Product[] = [
     ],
     description:
       'Engineered with an exaggerated cowl lapel that ascends into an architectural storm neck, falling into deep accordion wingback pleats that flare dramatically with your stride.',
-    imageUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1200&q=85',
+    imageUrl: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1200&q=85',
     colors: [
       { name: 'Basalt Black', hex: '#0a0a0d' },
       { name: 'Ash Bone', hex: '#ded6c7' }
@@ -80,7 +80,7 @@ export const PRODUCTS: Product[] = [
     ],
     description:
       'Architectural cocoon silhouette that holds its sculpted volume. Features dropped rounded shoulders and concealed internal harness straps to wear draped off-shoulder.',
-    imageUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=1200&q=85',
+    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=85',
     colors: [
       { name: 'Obsidian Black', hex: '#070709' },
       { name: 'Smoked Lead', hex: '#334155' }
@@ -177,7 +177,7 @@ export const PRODUCTS: Product[] = [
     ],
     description:
       'Second-skin sculpting top spliced with precise laser-cut voids that trace the intercostal ribcage. High mock neck with thumb-loop cuffs for a streamlined silhouette.',
-    imageUrl: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1200&q=85',
+    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=85',
     colors: [
       { name: 'Pitch Void', hex: '#08080a' },
       { name: 'Alabaster Bone', hex: '#f0ece3' }
@@ -201,7 +201,7 @@ export const PRODUCTS: Product[] = [
     ],
     description:
       'Imposing monolith hoodie. The exaggerated architectural cowl stands independently around the face or drapes gracefully over the collarbones.',
-    imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=85',
+    imageUrl: 'https://images.unsplash.com/photo-1550614000-4895a10e1bfd?auto=format&fit=crop&w=1200&q=85',
     colors: [
       { name: 'Washed Basalt', hex: '#1c1c24' },
       { name: 'Pitch Black', hex: '#0a0a0c' }
@@ -225,7 +225,7 @@ export const PRODUCTS: Product[] = [
     ],
     description:
       'Engineered for fluid motion. Multi-panel trousers cut with curved ergonomic inseams, 3D angular bellow cargo compartments, and quick-pull ankle toggles to switch from wide-leg to parachute fit.',
-    imageUrl: 'https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1200&q=85',
+    imageUrl: 'https://images.unsplash.com/photo-1548883354-7622d03aca27?auto=format&fit=crop&w=1200&q=85',
     colors: [
       { name: 'Void Black', hex: '#0a0a0d' },
       { name: 'Basalt Charcoal', hex: '#2a2c33' }
