@@ -56,13 +56,20 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         
         {/* Header */}
         <div className="p-6 border-b border-white/10 flex items-center justify-between">
-          <div>
-            <span className="font-syne font-bold text-base tracking-widest uppercase text-white block">
-              Acquisition Manifest
-            </span>
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-              Atelier Vault Allocation
-            </span>
+          <div className="flex items-center gap-3">
+            <img
+              src="/brand-logo.png"
+              alt="Pheonix Seal"
+              className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]"
+            />
+            <div>
+              <span className="font-syne font-bold text-base tracking-widest uppercase text-white block">
+                Acquisition Manifest
+              </span>
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                Atelier Vault Allocation
+              </span>
+            </div>
           </div>
 
           <button
@@ -77,8 +84,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Content */}
         {orderComplete ? (
           <div className="flex-1 p-8 flex flex-col items-center justify-center text-center space-y-6">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <CheckCircle2 className="w-7 h-7" />
+            <div className="relative">
+              <img
+                src="/brand-logo.png"
+                alt="Pheonix Seal"
+                className="w-20 h-auto object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.45)] mx-auto mb-3"
+              />
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
             </div>
             <div>
               <h3 className="font-syne font-bold text-xl uppercase tracking-wide">

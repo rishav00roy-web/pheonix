@@ -42,7 +42,14 @@ export const DossierSheet: React.FC<DossierSheetProps> = ({
         
         {/* Top Handle & Close */}
         <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-          <div className="w-10 h-1 rounded-full bg-white/20 mx-auto -mr-6" />
+          <div className="flex items-center gap-2">
+            <img
+              src="/brand-logo.png"
+              alt="Pheonix Seal"
+              className="w-5 h-5 object-contain opacity-90"
+            />
+            <span className="text-[10px] font-mono tracking-[0.2em] text-zinc-400 uppercase">PHEONIX ARCHIVE</span>
+          </div>
           <button
             onClick={onClose}
             className="p-1.5 rounded-full border border-white/10 hover:bg-white/10 text-zinc-400 hover:text-white transition-all ml-auto"

@@ -109,6 +109,17 @@ export const Hero: React.FC<HeroProps> = ({
           ))}
         </div>
 
+        {/* Official Brand Insignia Emblem */}
+        <div className="relative inline-flex items-center justify-center mx-auto pt-1 group">
+          <div className="absolute inset-0 bg-ember-500/20 blur-2xl rounded-full scale-125 pointer-events-none" />
+          <div className="absolute inset-0 bg-purple-600/25 blur-3xl rounded-full scale-150 pointer-events-none" />
+          <img
+            src="/brand-logo.png"
+            alt="Pheonix Cyber Emblem"
+            className="relative w-36 sm:w-56 md:w-72 h-auto mx-auto object-contain drop-shadow-[0_0_35px_rgba(249,115,22,0.4)] filter brightness-105 pointer-events-none transition-transform duration-700 group-hover:scale-105"
+          />
+        </div>
+
         {/* Monolith Brand Headline */}
         <div>
           <h1 className="font-syne font-black text-4xl sm:text-7xl md:text-8xl tracking-[0.18em] sm:tracking-[0.25em] uppercase text-white leading-none">

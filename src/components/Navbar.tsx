@@ -24,14 +24,19 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="fixed top-0 left-0 right-0 z-40 bg-void/85 backdrop-blur-md border-b border-white/[0.04] transition-all">
       <div className="w-full px-4 sm:px-10 h-16 sm:h-20 flex items-center justify-between">
         
-        {/* Brand Title */}
-        <div className="flex items-center gap-3 sm:gap-6">
+        {/* Brand Title & Insignia */}
+        <div className="flex items-center gap-2.5 sm:gap-6">
           <button
             onClick={() => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="text-left group focus:outline-none"
+            className="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none"
           >
+            <img
+              src="/brand-logo.png"
+              alt="Pheonix Insignia"
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-[0_0_10px_rgba(249,115,22,0.4)] group-hover:scale-105 transition-transform"
+            />
             <span className="font-syne font-black text-lg sm:text-2xl tracking-[0.22em] sm:tracking-[0.35em] uppercase text-white group-hover:text-ember-400 transition-colors">
               PHEONIX
             </span>
@@ -41,8 +46,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </div>
 
-        {/* Center: Direct Catalog Link */}
-        <div className="flex items-center">
+        {/* Center: Direct Catalog Link (Desktop/Tablet) */}
+        <div className="hidden md:flex items-center">
           <button
             onClick={() => {
               soundManager.playClick();

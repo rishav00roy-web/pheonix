@@ -4,7 +4,14 @@ export const Footer: React.FC = () => {
   return (
     <footer className="border-t border-white/[0.06] bg-void py-16 text-center font-mono text-xs text-zinc-600">
       <div className="max-w-4xl mx-auto px-6 space-y-4">
-        <div className="font-syne font-bold text-sm tracking-[0.35em] uppercase text-zinc-400">
+        <div className="flex justify-center">
+          <img
+            src="/brand-logo.png"
+            alt="Pheonix Seal"
+            className="w-16 sm:w-24 h-auto object-contain opacity-85 hover:opacity-100 transition-opacity drop-shadow-[0_0_15px_rgba(249,115,22,0.35)]"
+          />
+        </div>
+        <div className="font-syne font-bold text-sm tracking-[0.35em] uppercase text-zinc-300">
           PHEONIX ATELIER
         </div>
         <div className="text-[10px] tracking-[0.25em] text-zinc-500 uppercase">
