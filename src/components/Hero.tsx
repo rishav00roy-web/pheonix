@@ -34,10 +34,13 @@ const CATEGORIES = [
   { id: 'accessories', label: 'Accessories (2)' },
 ];
 
-// SIZE_CLAMP drives the PHEONIX font-size.
-// Logo renders at 1.8× this value (see inline style) so its wide-wing
-// shape commands the same vertical mass as the thick letterforms.
-const SIZE_CLAMP = 'clamp(3.2rem, 8vw, 9.5rem)';
+// Font size for PHEONIX wordmark.
+// Mobile: 14vw on a 390px screen = ~55px — readable and bold.
+// Desktop: 8vw on 1200px = ~96px, capped at 9.5rem.
+// Logo height on mobile = same as text (1:1), desktop = 1.8× for visual mass balance.
+const SIZE_CLAMP      = 'clamp(3.2rem, 14vw, 9.5rem)';
+const LOGO_MOBILE     = 'clamp(3.2rem, 14vw, 9.5rem)';   // matches text on mobile stack
+const LOGO_DESKTOP    = 'clamp(5.76rem, 12.6vw, 17.1rem)'; // 1.8× on desktop split
 
 export const Hero: React.FC<HeroProps> = ({
   onExploreClick,
@@ -131,18 +134,23 @@ export const Hero: React.FC<HeroProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-center w-full max-w-6xl gap-10 sm:gap-0">
 
             {/* LEFT HALF — logo
-                LOGO_CLAMP = 1.8× SIZE_CLAMP so the wide-wing bird commands
-                the same vertical mass as the thick PHEONIX letterforms.       */}
+                Mobile: same height as text (stacked, 1:1 looks balanced).
+                Desktop: 1.8× taller to compensate for the wide-wing aspect ratio
+                         that makes equal-height logos look lighter than blocky text. */}
             <div className="flex-1 flex items-center justify-center sm:justify-end sm:pr-10 lg:pr-14">
               <img
                 src="/brand-logo.png"
                 alt="Pheonix"
                 draggable={false}
-                style={{
-                  height: 'clamp(5.76rem, 14.4vw, 17.1rem)', /* 1.8 × SIZE_CLAMP */
-                  width: 'auto',
-                }}
-                className="object-contain select-none pointer-events-none"
+                className="object-contain select-none pointer-events-none block sm:hidden"
+                style={{ height: LOGO_MOBILE, width: 'auto' }}
+              />
+              <img
+                src="/brand-logo.png"
+                alt="Pheonix"
+                draggable={false}
+                className="object-contain select-none pointer-events-none hidden sm:block"
+                style={{ height: LOGO_DESKTOP, width: 'auto' }}
               />
             </div>
 
@@ -175,8 +183,8 @@ export const Hero: React.FC<HeroProps> = ({
                 </h1>
                 {/* tagline */}
                 <p
-                  className="font-mono uppercase tracking-[0.28em] text-zinc-400 mt-3"
-                  style={{ fontSize: '13px' }}
+                  className="font-mono uppercase tracking-[0.12em] sm:tracking-[0.24em] text-zinc-400 mt-3"
+                  style={{ fontSize: '12px' }}
                 >
                   Bars from the hills. Threads for the street.
                 </p>
