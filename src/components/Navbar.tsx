@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Volume2, VolumeX, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Volume2, VolumeX, MessageCircle } from 'lucide-react';
 import { soundManager } from '../utils/audio';
 
 interface NavbarProps {
@@ -8,12 +8,35 @@ interface NavbarProps {
   onScrollToCatalog: () => void;
 }
 
+const WHATSAPP_URL = 'https://wa.me/60017633352';
+
 export const Navbar: React.FC<NavbarProps> = ({
   cartCount,
   onOpenVault,
-  onScrollToCatalog
+  onScrollToCatalog,
 }) => {
   const [isAudioActive, setIsAudioActive] = useState(false);
+  // Navbar is hidden on the hero; appears once scrolled past it
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const hero = document.getElementById('hero-section');
+
+    const check = () => {
+      if (!hero) {
+        // fallback: show after 80vh
+        setVisible(window.scrollY > window.innerHeight * 0.8);
+        return;
+      }
+      const heroBottom = hero.getBoundingClientRect().bottom;
+      // slide in once hero bottom is above the top of the viewport
+      setVisible(heroBottom <= 0);
+    };
+
+    check(); // run on mount
+    window.addEventListener('scroll', check, { passive: true });
+    return () => window.removeEventListener('scroll', check);
+  }, []);
 
   const toggleSound = () => {
     const active = soundManager.toggleMute();
@@ -21,74 +44,90 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-void/85 backdrop-blur-md border-b border-white/[0.04] transition-all">
-      <div className="w-full px-4 sm:px-10 h-16 sm:h-20 flex items-center justify-between">
-        
-        {/* Brand Title & Insignia */}
-        <div className="flex items-center gap-2.5 sm:gap-6">
-          <button
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none"
-          >
-            <img
-              src="/brand-logo.png"
-              alt="Pheonix Insignia"
-              className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-[0_0_10px_rgba(249,115,22,0.4)] group-hover:scale-105 transition-transform"
-            />
-            <span className="font-syne font-black text-lg sm:text-2xl tracking-[0.22em] sm:tracking-[0.35em] uppercase text-white group-hover:text-ember-400 transition-colors">
-              PHEONIX
-            </span>
-          </button>
-          <span className="hidden lg:inline-block text-[10px] font-mono tracking-[0.25em] text-zinc-500 uppercase border-l border-white/10 pl-6">
-            AUTUMN / WINTER 2026
-          </span>
-        </div>
+    <header
+      className={`fixed top-0 left-0 right-0 z-40
+                  bg-void/90 backdrop-blur-md border-b border-white/[0.06]
+                  transition-transform duration-500 ease-in-out
+                  ${visible ? 'translate-y-0' : '-translate-y-full'}`}
+    >
+      <div className="w-full px-6 sm:px-10 h-14 sm:h-16 flex items-center justify-between gap-4">
 
-        {/* Center: Direct Catalog Link (Desktop/Tablet) */}
-        <div className="hidden md:flex items-center">
-          <button
-            onClick={() => {
-              soundManager.playClick();
-              onScrollToCatalog();
-            }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 border border-white/15 bg-black/60 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-zinc-300 hover:text-white hover:border-white/40 transition-all"
-          >
-            <Sparkles className="w-3 h-3 text-ember-400" />
-            <span>Wardrobe (14)</span>
-          </button>
-        </div>
+        {/* LEFT — brand name only (no logo image) */}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="font-syne font-black text-sm sm:text-base tracking-[0.28em] uppercase
+                     text-white hover:text-ember-400 transition-colors duration-300
+                     focus:outline-none pl-[0.28em]"
+          aria-label="Scroll to top"
+        >
+          PHEONIX
+        </button>
 
-        {/* Right: Sound & Vault */}
-        <div className="flex items-center gap-2.5 sm:gap-6 font-mono text-xs">
-          {/* Ambient Drone Toggle */}
+        {/* RIGHT — nav controls */}
+        <div className="flex items-center gap-3 sm:gap-5">
+
+          {/* View Catalog — desktop */}
+          <button
+            onClick={() => { soundManager.playClick(); onScrollToCatalog(); }}
+            className="hidden md:flex items-center gap-1.5 font-mono uppercase
+                       tracking-[0.25em] text-zinc-400 hover:text-white
+                       transition-colors border-b border-transparent
+                       hover:border-white/30 pb-px"
+            style={{ fontSize: '11px' }}
+          >
+            View Catalog
+          </button>
+
+          {/* WhatsApp / Contact */}
+          <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => soundManager.playClick()}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                       border border-white/15 bg-black/40
+                       font-mono uppercase tracking-[0.2em] text-zinc-300
+                       hover:text-white hover:border-emerald-500/60
+                       hover:bg-emerald-500/10
+                       hover:shadow-[0_0_20px_-4px_rgba(16,185,129,0.25)]
+                       transition-all duration-300"
+            style={{ fontSize: '11px' }}
+            aria-label="Contact via WhatsApp"
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>Contact</span>
+          </a>
+
+          {/* Sound toggle */}
           <button
             onClick={toggleSound}
-            className={`flex items-center gap-1.5 p-1.5 sm:py-1.5 sm:px-3 border text-[10px] uppercase tracking-widest transition-all ${
+            className={`p-1.5 rounded-lg border transition-all ${
               isAudioActive
                 ? 'border-ember-500/60 bg-ember-500/10 text-ember-400'
                 : 'border-white/15 bg-black/40 text-zinc-400 hover:text-white hover:border-white/30'
             }`}
-            title={isAudioActive ? 'Atmospheric Drone Active' : 'Sound Muted'}
+            title={isAudioActive ? 'Mute atmosphere' : 'Unmute atmosphere'}
+            aria-label="Toggle ambient sound"
           >
-            {isAudioActive ? <Volume2 className="w-3.5 h-3.5 text-ember-400" /> : <VolumeX className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{isAudioActive ? 'Drone' : 'Mute'}</span>
+            {isAudioActive
+              ? <Volume2 className="w-3.5 h-3.5 text-ember-400" />
+              : <VolumeX className="w-3.5 h-3.5" />
+            }
           </button>
 
-          {/* Vault Trigger */}
+          {/* Vault */}
           <button
-            onClick={() => {
-              soundManager.playClick();
-              onOpenVault();
-            }}
-            className="flex items-center gap-1.5 text-white hover:text-ember-400 transition-colors uppercase tracking-[0.18em] text-[11px]"
+            onClick={() => { soundManager.playClick(); onOpenVault(); }}
+            className="flex items-center gap-1.5 text-white hover:text-ember-400
+                       transition-colors uppercase tracking-[0.18em] font-mono"
+            style={{ fontSize: '11px' }}
+            aria-label="Open acquisition vault"
           >
             <span>Vault</span>
-            <span className="font-mono text-zinc-400">[{cartCount}]</span>
+            <span className="text-zinc-500">[{cartCount}]</span>
           </button>
-        </div>
 
+        </div>
       </div>
     </header>
   );

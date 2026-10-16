@@ -85,7 +85,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </div>
             </div>
             <div>
-              <h3 className="font-syne font-black text-xl uppercase tracking-wider text-white">
+              <h3 className="font-nistha text-xl uppercase tracking-wider text-white">
                 Allocation Committed
               </h3>
               <p className="text-xs font-mono text-zinc-400 mt-2">
