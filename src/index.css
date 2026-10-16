@@ -2,75 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Nishtha Hindi Display Font ─────────────────────────────────────────── */
+@font-face {
+  font-family: 'nistha';
+  src: url('/src/assets/fonts/nistha.woff2') format('woff2'),
+       url('/src/assets/fonts/nistha.woff')  format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     color-scheme: dark;
+
+    /* ── Font-size scale (LearnUI guidelines, adjusted for 90% Chrome zoom)
+       At 90% zoom, browser renders px * 0.9 → code slightly larger so
+       perceived size lands on the guide's recommended range.
+       
+       Interaction-heavy page targets:
+         body / ui text  : 16-18px perceived → code 18px
+         secondary / mono: 13-14px perceived → code 14-15px
+         hero display    : clamp-based, fills viewport naturally            */
+    --fs-body:      18px;    /* main readable text                          */
+    --fs-ui:        16px;    /* buttons, nav links, form controls           */
+    --fs-secondary: 14px;    /* captions, labels, mono coords               */
+    --fs-micro:     12px;    /* legal, edition chips, fine print            */
   }
-  
+
   html {
     scroll-behavior: smooth;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-size: var(--fs-body);
   }
-  
+
   body {
     background-color: #030305;
     color: #f3efe8;
     overflow-x: clip;
     -webkit-font-smoothing: antialiased;
+    line-height: 1.65;
   }
 
-  /* Custom subtle dark scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #060609;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #1d212f;
-    border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #ff441f;
-  }
+  /* ── Smooth dark scrollbar ─────────────────────────────────────────────── */
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #060609; }
+  ::-webkit-scrollbar-thumb { background: #1d212f; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #ff441f; }
 }
 
-/* Glassmorphism and Surrealist styling utilities */
+/* ─── Glassmorphism panels ────────────────────────────────────────────────── */
 .glass-panel {
-  background: rgba(11, 12, 16, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(11, 12, 16, 0.70);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
 }
 
 .glass-panel-hover {
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 12px;
 }
 .glass-panel-hover:hover {
-  border-color: rgba(255, 68, 31, 0.4);
-  box-shadow: 0 0 35px -5px rgba(255, 68, 31, 0.22);
+  border-color: rgba(255, 68, 31, 0.35);
+  box-shadow: 0 0 40px -8px rgba(255, 68, 31, 0.20);
 }
 
-.glow-ember {
-  text-shadow: 0 0 20px rgba(255, 68, 31, 0.6);
-}
+/* ─── Glow utilities ──────────────────────────────────────────────────────── */
+.glow-ember      { text-shadow: 0 0 24px rgba(255, 68, 31, 0.55); }
+.glow-box-ember  { box-shadow: 0 0 48px -12px rgba(255, 68, 31, 0.30); }
+.glow-box-chrome { box-shadow: 0 0 48px -12px rgba(226, 232, 240, 0.12); }
 
-.glow-box-ember {
-  box-shadow: 0 0 40px -10px rgba(255, 68, 31, 0.35);
-}
-
-.glow-box-chrome {
-  box-shadow: 0 0 40px -10px rgba(226, 232, 240, 0.15);
-}
-
-/* Subtle grain overlay */
+/* ─── Noise overlay ───────────────────────────────────────────────────────── */
 .bg-noise {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 0);
   background-size: 24px 24px;
 }
 
-/* 35mm Film Grain Overlay (Cinematic UI Texture #1) */
+/* ─── 35mm Film Grain ─────────────────────────────────────────────────────── */
 .film-grain {
   position: fixed;
   inset: 0;
@@ -78,14 +88,56 @@
   height: 100vh;
   pointer-events: none;
   z-index: 999;
-  opacity: 0.035;
+  opacity: 0.028;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Biomechanical architectural grid lines */
+/* ─── Cyber grid ──────────────────────────────────────────────────────────── */
 .cyber-grid {
   background-size: 40px 40px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-image:
+    linear-gradient(to right,  rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.018) 1px, transparent 1px);
 }
+
+/* ─── Nistha display font helper class ───────────────────────────────────── */
+.font-nistha {
+  font-family: 'nistha', 'Syne', sans-serif;
+  font-weight: normal;
+  /* Nistha has generous built-in spacing — tighten slightly for display use */
+  letter-spacing: 0.04em;
+}
+
+/* ─── SOFT UI: global edge-softening overrides ────────────────────────────
+   Replaces the stiff sharp-edged components site-wide.  All buttons,
+   cards, drawers, modals get 10-14px radius; small chips/tags get 6px.    */
+
+/* Buttons that use border class without explicit rounded-* */
+button:not([class*="rounded"]) {
+  border-radius: 8px;
+}
+
+/* Sharp border containers — drawers, sheets, catalog cards */
+.border.border-white\/\[0\.08\],
+.border.border-white\/20,
+.border.border-white\/15,
+.border.border-white\/10 {
+  border-radius: 10px;
+}
+
+/* Pill/chip overrides — mono badge labels stay pill-shaped */
+.font-mono.text-\[9px\],
+.font-mono.text-\[10px\] {
+  border-radius: 6px;
+}
+
+/* ─── Hide scrollbar (no-scrollbar util) ─────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Fade-in animation (used by DossierSheet / CartDrawer overlays) ─────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fadeIn { animation: fadeIn 0.25s ease-out both; }

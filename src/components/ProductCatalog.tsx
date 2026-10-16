@@ -34,7 +34,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
           <Sparkles className="w-3 h-3" />
           <span>Autumn / Winter 2026 Collection</span>
         </div>
-        <h2 className="font-syne font-black text-3xl sm:text-5xl text-white uppercase tracking-tight">
+        <h2 className="font-nistha text-3xl sm:text-5xl text-white uppercase tracking-tight">
           The Wardrobe
         </h2>
         <p className="text-xs text-zinc-400 font-mono tracking-widest">
@@ -150,7 +150,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               {/* Garment Details & Material Callout */}
               <div className="p-5 sm:p-6 space-y-3 border-t border-white/[0.06]">
                 <div className="space-y-1">
-                  <h3 className="font-syne font-bold text-sm sm:text-base text-white uppercase group-hover:text-ember-300 transition-colors line-clamp-1 tracking-tight">
+                  <h3 className="font-nistha text-sm sm:text-base text-white uppercase group-hover:text-ember-300 transition-colors line-clamp-1 tracking-tight">
                     {product.name}
                   </h3>
                   <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest line-clamp-1">
@@ -219,7 +219,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
                   loading="lazy"
                 />
                 <div>
-                  <h4 className="font-syne font-bold text-sm text-white group-hover:text-ember-300 uppercase transition-colors">
+                  <h4 className="font-nistha text-sm text-white group-hover:text-ember-300 uppercase transition-colors">
                     {product.name}
                   </h4>
                   <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest line-clamp-1">

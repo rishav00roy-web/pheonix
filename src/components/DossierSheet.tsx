@@ -84,7 +84,7 @@ export const DossierSheet: React.FC<DossierSheetProps> = ({
 
         {/* Title & Valuation */}
         <div className="space-y-1">
-          <h2 className="font-syne font-black text-xl sm:text-2xl uppercase tracking-tight text-white">
+          <h2 className="font-nistha text-xl sm:text-2xl uppercase tracking-tight text-white">
             {product.name}
           </h2>
           <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-widest">
