@@ -22,6 +22,8 @@ export function App() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isVaultOpen, setIsVaultOpen] = useState(false);
+  // Hidden on hero, visible once hero scrolls out of view
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
 
   useEffect(() => {
     try {
@@ -38,6 +40,18 @@ export function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Show WhatsApp button only after hero scrolls out of view
+  useEffect(() => {
+    const hero = document.getElementById('hero-section');
+    if (!hero) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowWhatsApp(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(hero);
+    return () => observer.disconnect();
   }, []);
 
   const handleAcquire = (product: Product, size: string, color: string) => {
@@ -167,22 +181,21 @@ export function App() {
       <Footer />
 
       {/* ── Floating WhatsApp contact button ──────────────────────────────
-          Fixed bottom-right, always visible. Opens owner's WhatsApp.       */}
+          Hidden during hero, fades in once hero scrolls out of view.       */}
       <a
         href="https://wa.me/60017633352"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contact on WhatsApp"
-        className="fixed bottom-6 right-6 z-50
-                   w-13 h-13 sm:w-14 sm:h-14
+        className={`fixed bottom-6 right-6 z-50
                    flex items-center justify-center
                    bg-emerald-500 hover:bg-emerald-400
                    rounded-full shadow-[0_4px_24px_rgba(16,185,129,0.45)]
                    hover:shadow-[0_4px_32px_rgba(16,185,129,0.65)]
-                   transition-all duration-300 hover:scale-110 group"
+                   transition-all duration-500 hover:scale-110
+                   ${showWhatsApp ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'}`}
         style={{ width: '52px', height: '52px' }}
       >
-        {/* WhatsApp SVG icon (official shape, no external dependency) */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"

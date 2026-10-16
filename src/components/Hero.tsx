@@ -35,12 +35,12 @@ const CATEGORIES = [
 ];
 
 // Font size for PHEONIX wordmark.
-// Mobile: 14vw on a 390px screen = ~55px — readable and bold.
-// Desktop: 8vw on 1200px = ~96px, capped at 9.5rem.
-// Logo height on mobile = same as text (1:1), desktop = 1.8× for visual mass balance.
-const SIZE_CLAMP      = 'clamp(3.2rem, 14vw, 9.5rem)';
-const LOGO_MOBILE     = 'clamp(3.2rem, 14vw, 9.5rem)';   // matches text on mobile stack
-const LOGO_DESKTOP    = 'clamp(5.76rem, 12.6vw, 17.1rem)'; // 1.8× on desktop split
+// Single clamp works across all viewports in a side-by-side row:
+// at 390px mobile: 12vw = ~47px — bold and readable in a half-width column.
+// at 1400px desktop: 8vw = ~112px, capped at 9.5rem.
+const SIZE_CLAMP   = 'clamp(2.4rem, 8vw, 9.5rem)';
+// Logo height = 1.8× text for visual mass balance (wide-wing shape).
+const LOGO_CLAMP   = 'clamp(4.32rem, 14.4vw, 17.1rem)';
 
 export const Hero: React.FC<HeroProps> = ({
   onExploreClick,
@@ -123,57 +123,35 @@ export const Hero: React.FC<HeroProps> = ({
           className="flex-1 flex items-center justify-center will-change-transform px-6 sm:px-10 lg:px-16 py-8"
         >
           {/*
-            The split row.
-            Mobile (< sm): stacked vertically, both centered.
-            Desktop (sm+): side by side, logo right-aligns in its half,
-                           text left-aligns in its half, hairline divider between.
-
-            Key alignment rule: BOTH halves are `items-center` so the
-            logo's vertical center = text group's vertical center.
+            Always side-by-side on every viewport — no stacking.
+            Both halves items-center so logo midline = text midline.
           */}
-          <div className="flex flex-col sm:flex-row items-center justify-center w-full max-w-6xl gap-10 sm:gap-0">
+          <div className="flex flex-row items-center justify-center w-full max-w-6xl gap-0">
 
-            {/* LEFT HALF — logo
-                Mobile: same height as text (stacked, 1:1 looks balanced).
-                Desktop: 1.8× taller to compensate for the wide-wing aspect ratio
-                         that makes equal-height logos look lighter than blocky text. */}
-            <div className="flex-1 flex items-center justify-center sm:justify-end sm:pr-10 lg:pr-14">
+            {/* LEFT HALF — logo, 1.8× text height for visual mass balance */}
+            <div className="flex-1 flex items-center justify-center pr-4 sm:pr-10 lg:pr-14">
               <img
                 src="/brand-logo.png"
                 alt="Pheonix"
                 draggable={false}
-                className="object-contain select-none pointer-events-none block sm:hidden"
-                style={{ height: LOGO_MOBILE, width: 'auto' }}
-              />
-              <img
-                src="/brand-logo.png"
-                alt="Pheonix"
-                draggable={false}
-                className="object-contain select-none pointer-events-none hidden sm:block"
-                style={{ height: LOGO_DESKTOP, width: 'auto' }}
+                style={{ height: LOGO_CLAMP, width: 'auto' }}
+                className="object-contain select-none pointer-events-none"
               />
             </div>
 
-            {/* ── DIVIDER — design feature, not a hairline ──────────────────
-                A branded vertical mark: ember-tinted gradient line with a
-                centred diamond glyph. Visible only on sm+ (desktop split).   */}
-            <div className="hidden sm:flex shrink-0 flex-col items-center justify-center self-stretch px-2 lg:px-4">
-              {/* Top fade */}
+            {/* ── DIVIDER — ember diamond, visible on all viewports ─────── */}
+            <div className="shrink-0 flex flex-col items-center justify-center self-stretch px-2 sm:px-4">
               <div className="flex-1 w-px bg-gradient-to-b from-transparent to-ember-500/40" />
-              {/* Diamond accent */}
               <div
                 className="shrink-0 text-ember-500/70 font-mono select-none"
-                style={{ fontSize: '18px', lineHeight: 1 }}
+                style={{ fontSize: '14px', lineHeight: 1 }}
                 aria-hidden="true"
-              >
-                ◆
-              </div>
-              {/* Bottom fade */}
+              >◆</div>
               <div className="flex-1 w-px bg-gradient-to-t from-transparent to-ember-500/40" />
             </div>
 
             {/* RIGHT HALF — wordmark + tagline */}
-            <div className="flex-1 flex items-center justify-center sm:justify-start sm:pl-10 lg:pl-14">
+            <div className="flex-1 flex items-center justify-center sm:justify-start pl-4 sm:pl-10 lg:pl-14">
               <div>
                 <h1
                   className="font-nistha text-white select-none leading-none"
@@ -183,10 +161,10 @@ export const Hero: React.FC<HeroProps> = ({
                 </h1>
                 {/* tagline */}
                 <p
-                  className="font-mono uppercase tracking-[0.12em] sm:tracking-[0.24em] text-zinc-400 mt-3"
-                  style={{ fontSize: '12px' }}
+                  className="font-mono uppercase tracking-[0.10em] sm:tracking-[0.22em] text-zinc-400 mt-2 sm:mt-3"
+                  style={{ fontSize: '11px' }}
                 >
-                  Bars from the hills. Threads for the street.
+                  Bars from the hills.<br className="sm:hidden" /> Threads for the street.
                 </p>
               </div>
             </div>
