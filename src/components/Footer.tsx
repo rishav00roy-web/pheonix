@@ -1,5 +1,4 @@
 import React from 'react';
-import { MessageCircle } from 'lucide-react';
 
 // Inline SVG icons for platforms not in this lucide version
 const InstagramIcon = () => (
