@@ -105,6 +105,9 @@ const DUO: AjPhoto = {
 
 const plate = (id: string) => PLATES.find((p) => p.id === id) as AjPhoto;
 
+/** Her plate on the Shop: the style the rail is picked in */
+export const STYLE_PLATE = plate('red-studio');
+
 /** The six squares under Follow. Photos without a known post link to her profile. */
 export const FOLLOW: AjPhoto[] = [DUO, plate('saree'), plate('graffiti'), plate('red-studio'), plate('violet'), plate('beanie')];
 
@@ -115,3 +118,10 @@ export const formatPostDate = (iso: string) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 export const pad2 = (n: number) => String(n).padStart(2, '0');
+
+/** Her track on the music cassette, with the music video's thumbnail as its art */
+export const TRACK = {
+  title: 'Mone Mone',
+  audio: '/audio/mone-mone.mp3',
+  art: '/aj-shield/mone-mone-art.webp',
+} as const;

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 const HOUSE = 'PHEONIX';
-const DEFAULT_TITLE = `${HOUSE} | Founded in Jorhat by AJ Shield`;
+const DEFAULT_TITLE = `${HOUSE} | Streetwear in AJ Shield’s style, Jorhat`;
 
 const descriptionTag = () => document.querySelector<HTMLMetaElement>('meta[name="description"]');
 // The house description from index.html, put back when a page with its own leaves

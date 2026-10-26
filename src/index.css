@@ -199,16 +199,6 @@
     border-radius: 9999px;
     padding: 5px 12px;
   }
-  .specimen-no {
-    z-index: 2;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 44px;
-    line-height: 1;
-    color: rgb(var(--ember-400-rgb) / 0.35);
-    transition: color 500ms ease;
-  }
-  .specimen:hover .specimen-no { color: rgb(var(--ember-400-rgb) / 0.55); }
   .specimen-inspect {
     z-index: 2;
     display: inline-flex;
@@ -240,15 +230,78 @@
   }
   .specimen-acquire:hover { border-color: var(--text); background: rgb(var(--bone-100-rgb) / 0.1); color: var(--text); }
   .specimen-acquire:active, .specimen-inspect:active { transform: scale(0.97); }
-  /* Inspect waits for hover where there is hover; touch screens always see it */
-  @media (hover: hover) {
-    .specimen-inspect { opacity: 0; }
-    .specimen:hover .specimen-inspect, .specimen-inspect:focus-visible { opacity: 1; }
+  /* Inspect waits for hover. Touch screens open the piece from the photograph
+     itself, so the button stays out of the way there. */
+  .specimen-inspect { opacity: 0; }
+  .specimen:hover .specimen-inspect, .specimen-inspect:focus-visible { opacity: 1; }
+  /* Keyboard focus shows it at once, not after the hover fade */
+  .specimen-inspect:focus-visible { transition: none; }
+  @media (hover: none) {
+    .specimen-inspect:not(:focus-visible) { visibility: hidden; }
   }
   @media (min-width: 640px) {
     .specimen-tag { font-size: 12px; }
-    .specimen-no { font-size: 60px; }
   }
+
+  /* Product photographs on warm paper: the shops' white studio backdrops
+     print as bone, so every piece sits on the same stock as the cassette label */
+  .paper { background: rgb(var(--bone-100-rgb)); }
+  .paper img { mix-blend-mode: multiply; }
+
+  /* The ember hairline and its diamond, after the Home hero */
+  .rule {
+    position: relative;
+    height: 1px;
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(90deg, var(--ember), rgb(var(--ember-500-rgb) / 0.15));
+    transform-origin: left;
+  }
+  .rule-diamond {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    font-size: 14px;
+    line-height: 16px;
+    text-align: center;
+    color: var(--ember);
+  }
+
+  /* The Shop's filter: an index of the rail. Quiet names with their counts;
+     the chosen one turns bone and an ember line draws under it */
+  .rail-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding-inline: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(var(--chrome-400-rgb));
+    transition: color 300ms ease;
+  }
+  .rail-tab::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    bottom: 8px;
+    height: 1px;
+    background: var(--ember);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 500ms var(--ease-quiet);
+  }
+  .rail-tab:hover, .rail-tab[aria-pressed='true'] { color: var(--text); }
+  .rail-tab[aria-pressed='true']::after { transform: scaleX(1); }
+  .rail-count { font-family: var(--font-mono); letter-spacing: 0.08em; }
+  .rail-tab[aria-pressed='true'] .rail-count { color: rgb(var(--ember-400-rgb)); }
 
   /* Text link: a hairline under it that draws across on hover */
   .text-link {
@@ -304,6 +357,9 @@
   .dock-edge { clip-path: polygon(var(--dock-slant) 0, calc(100% - var(--dock-slant)) 0, 100% 100%, 0 100%); }
   .dock-body { clip-path: polygon(calc(var(--dock-slant) + 0.85px) 0, calc(100% - var(--dock-slant) - 0.85px) 0, calc(100% - 1.2px) 100%, 1.2px 100%); }
 
+  /* Icons: the hairline stays the same width at every size, so small and large icons match */
+  .icon :is(path, rect, circle) { vector-effect: non-scaling-stroke; }
+
   /* Fold-outs: native details, no browser marker */
   .fold summary::-webkit-details-marker { display: none; }
 
@@ -337,5 +393,5 @@ html.lenis, html.lenis body { height: auto; }
 .skip-link:focus { top: 12px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn, .text-link::after { transition: none; }
+  .btn, .text-link::after, .rail-tab, .rail-tab::after, .specimen-inspect, .specimen-acquire { transition: none; }
 }

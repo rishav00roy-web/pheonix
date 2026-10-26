@@ -6,11 +6,13 @@ export const BRAND = {
   name: 'Pheonix',
   founder: 'AJ Shield',
   tagline: 'Bars from the hills. Threads for the street.',
-  bio: 'A personal clothing label by AJ Shield — Assamese rapper, artist, and creator from Jorhat, Assam. Designed for those who carry their roots into every room they walk into.',
+  bio: 'A streetwear shop by AJ Shield, Assamese rapper, artist and model from Jorhat, Assam. Different brands, each piece picked in her style, for those who carry their roots into every room they walk into.',
+  /** The footer's short line: what the shop is and how to order */
+  summary: 'Streetwear from different brands, picked in AJ Shield’s style. Every order is placed on WhatsApp.',
   origin: { city: 'Jorhat, Assam', country: 'India', native: 'যোৰহাট' },
   credit: 'Made by Atelier Systems',
   /** [Placeholder] campaign line on Home: replace with the house's own */
-  campaignLine: 'Made in Jorhat, worn with intent.',
+  campaignLine: 'Picked in Jorhat, worn with intent.',
 } as const;
 
 export const INSTAGRAM_URL = 'https://www.instagram.com/aj_shiield/';

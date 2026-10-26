@@ -13,7 +13,7 @@ export const prefersReducedMotion =
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // Reduced motion: native scrolling only, no Lenis
-export const lenis: Lenis | null = prefersReducedMotion
+const lenis: Lenis | null = prefersReducedMotion
   ? null
   : new Lenis({
       lerp: 0.09,

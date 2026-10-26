@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FEATURED_IDS, findProduct, smallShot, type CategoryId, type Product } from '../data/products';
+import { CATEGORIES, FEATURED_IDS, findProduct, smallShot, type CategoryId, type Product } from '../data/products';
 import { BRAND } from '../data/brand';
 import { gsap, MOTION_OK, prefersReducedMotion, ScrollTrigger, useGSAP } from '../lib/smoothScroll';
 import { TLink } from '../lib/transition';
@@ -7,6 +7,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { SplitText } from '../components/SplitText';
 import { ProductCard } from '../components/ProductCard';
 import { BrandLogo } from '../components/BrandLogo';
+import { Crops } from '../components/Editorial';
 import Hero from '../components/Hero';
 
 const FEATURED = FEATURED_IDS.map((id) => findProduct(id)).filter((p): p is Product => !!p);
@@ -98,7 +99,7 @@ function Edit() {
           <li className="order-first lg:order-none col-span-2 lg:col-span-4 lg:col-start-8 lg:self-start">
             <SplitText id="edit-title" text="The edit" className="headline text-[clamp(44px,5.6vw,88px)]" />
             <p data-fade className="mt-5 max-w-[34ch] text-chrome-400">
-              Four pieces the house is wearing now, from a numbered run.
+              Four pieces on the rail right now, picked in AJ’s style.
             </p>
             <div data-fade className="mt-6">
               <TLink to="/shop" className="text-link">
@@ -143,7 +144,7 @@ function Statement() {
     { scope: ref }
   );
   return (
-    <section ref={ref} aria-label="About the house" className="section border-t border-obsidian-700">
+    <section ref={ref} aria-label="About Pheonix" className="section border-t border-obsidian-700">
       <div className="frame grid-12">
         <p className="headline lg:col-span-10 lg:col-start-2 text-[clamp(30px,3.8vw,58px)] leading-[1.18]">
           {BRAND.bio.split(' ').map((w, i) => (
@@ -157,24 +158,26 @@ function Statement() {
   );
 }
 
-/** Three category doors into the shop. */
+/** Three category doors into the shop, framed like plates. */
 function Doors() {
   return (
     <section aria-labelledby="doors-title" className="section border-t border-obsidian-700">
       <div className="frame">
-        <SplitText id="doors-title" text="Browse by category" className="headline text-[clamp(40px,5.2vw,80px)]" />
+        <SplitText id="doors-title" text="Start with a rail" className="headline text-[clamp(40px,5.2vw,80px)]" />
         <ul className="mt-12 lg:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-10">
           {DOORS.map((d) => {
             const p = findProduct(d.piece);
+            const count = CATEGORIES.find((c) => c.id === d.cat)?.count ?? 0;
             return (
               <li key={d.cat}>
-                <TLink to={`/shop?cat=${d.cat}`} className="group block">
-                  <div data-reveal className="relative aspect-[4/3] overflow-hidden bg-obsidian-900">
+                <TLink to={`/shop?cat=${d.cat}`} className="group relative block border border-bone-100/[0.08] hover:border-bone-100/25 p-3 sm:p-4 bg-obsidian-950 transition-colors duration-500">
+                  <Crops />
+                  <div data-reveal className="paper relative aspect-[4/3] overflow-hidden">
                     {p && <img src={smallShot(p.gallery[0])} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />}
                   </div>
-                  <div className="mt-5 flex items-baseline justify-between gap-4 border-b border-obsidian-700 group-hover:border-bone-100 pb-4 transition-colors duration-300">
-                    <h3 className="headline text-[28px] lg:text-[32px]">{d.label}</h3>
-                    <span className="text-[15px] text-chrome-400 group-hover:text-ember-400 transition-colors duration-300">Explore</span>
+                  <div className="mt-4 flex items-baseline justify-between gap-4">
+                    <h3 className="headline text-[28px] lg:text-[32px] group-hover:text-ember-400 transition-colors duration-300">{d.label}</h3>
+                    <span className="mono-label text-chrome-400 num">{String(count).padStart(2, '0')} {count === 1 ? 'piece' : 'pieces'}</span>
                   </div>
                 </TLink>
               </li>
