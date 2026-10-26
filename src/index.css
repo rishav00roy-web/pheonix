@@ -1,8 +1,15 @@
+/* Hallmark · checked: 2026-10-26 · genre: editorial (inferred)
+ * house: the original Pheonix palette. Void page, obsidian surfaces, bone text, one ember accent; Bodoni Moda headlines, Archivo text, Nistha for the wordmark only; the chrome phoenix crest as signature; square corners, 1px rules, no shadows
+ * kept on purpose: 67 spaced capitals on small labels, links and buttons, the client's specified house style for this label
+ * built: the project · redesign: polish · v2.0.0 */
+/* Hallmark · dismissed 54 · SplitText renders the h1/h2 it is given, so each labelled section does have its heading element */
+/* Hallmark · dismissed 28a · Home's first screen is the crest (fetchpriority high); the flagged image is a category tile far below the fold */
+/* Hallmark · dismissed 19 · the copyright line is the house's own original footer copy, restored at the owner's request */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Nishtha Hindi Display Font ─────────────────────────────────────────── */
+/* ─── Nistha: the PHEONIX wordmark, and nothing else (unchanged, by request) ── */
 @font-face {
   font-family: 'nistha';
   src: url('/src/assets/fonts/nistha.woff2') format('woff2'),
@@ -13,131 +20,322 @@
 }
 
 @layer base {
+  /* ── Tokens: every colour and font on the site resolves here ──────────── */
   :root {
     color-scheme: dark;
 
-    /* ── Font-size scale (LearnUI guidelines, adjusted for 90% Chrome zoom)
-       At 90% zoom, browser renders px * 0.9 → code slightly larger so
-       perceived size lands on the guide's recommended range.
-       
-       Interaction-heavy page targets:
-         body / ui text  : 16-18px perceived → code 18px
-         secondary / mono: 13-14px perceived → code 14-15px
-         hero display    : clamp-based, fills viewport naturally            */
-    --fs-body:      18px;    /* main readable text                          */
-    --fs-ui:        16px;    /* buttons, nav links, form controls           */
-    --fs-secondary: 14px;    /* captions, labels, mono coords               */
-    --fs-micro:     12px;    /* legal, edition chips, fine print            */
+    /* The house palette, from the original Pheonix site. RGB triplets so
+       Tailwind can apply alpha.
+       Void: the page. Obsidian: surfaces, panels and hairlines.
+       Bone: text (bone-100 on void is 18:1). Chrome-400: secondary text
+       (8:1); chrome-600 is for decorative lines only, never text.
+       Ember: the one accent. Active marks, link hover, the primary button
+       (with void text: 6:1), the focus ring. */
+    --void-rgb: 3 3 5;
+    --obsidian-950-rgb: 6 6 9;
+    --obsidian-900-rgb: 11 12 16;
+    --obsidian-800-rgb: 20 22 31;
+    --obsidian-700-rgb: 29 33 47;
+    --bone-50-rgb: 250 248 245;
+    --bone-100-rgb: 243 239 232;
+    --bone-300-rgb: 207 196 177;
+    --ember-400-rgb: 255 120 73;
+    --ember-500-rgb: 255 68 31;
+    --chrome-200-rgb: 226 232 240;
+    --chrome-400-rgb: 148 163 184;
+    --chrome-600-rgb: 71 85 105;
+
+    --void: rgb(var(--void-rgb));
+    --surface: rgb(var(--obsidian-900-rgb));
+    --line: rgb(var(--obsidian-700-rgb));
+    --text: rgb(var(--bone-100-rgb));
+    --text-quiet: rgb(var(--chrome-400-rgb));
+    --ember: rgb(var(--ember-500-rgb));
+
+    --font-serif: 'Bodoni Moda', 'Didot', 'Bodoni 72', Georgia, serif;
+    --font-body: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+    --font-mark: 'nistha', 'Bodoni Moda', serif;
+    /* The original site's label face: specimen tags, the tagline, prices */
+    --font-mono: 'Space Mono', ui-monospace, monospace;
+
+    /* No fixed top bar: the masthead scrolls away with the page */
+    --nav-h: 0px;
+    --mast-h: 72px;
+    /* The dock: its height plus the gap it keeps from the edge */
+    --dock-h: 64px;
+    --dock-slant: 22px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --dock-space: calc(var(--dock-h) + var(--safe-b) + 24px);
+    --gutter: clamp(16px, 3.5vw, 48px);
+    --section: clamp(72px, 9vw, 128px);
+    --ease-quiet: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (min-width: 1024px) {
+    :root { --mast-h: 88px; }
   }
 
   html {
-    scroll-behavior: smooth;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-size: var(--fs-body);
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-synthesis: none;
+    /* clip (not hidden) so sticky + ScrollTrigger pins keep working */
+    overflow-x: clip;
+    caret-color: var(--ember);
+    scrollbar-color: var(--line) var(--void);
   }
 
   body {
-    background-color: #030305;
-    color: #f3efe8;
+    background-color: var(--void);
+    color: var(--text);
     overflow-x: clip;
     -webkit-font-smoothing: antialiased;
-    line-height: 1.65;
+    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* ── Smooth dark scrollbar ─────────────────────────────────────────────── */
-  ::-webkit-scrollbar       { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: #060609; }
-  ::-webkit-scrollbar-thumb { background: #1d212f; border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #ff441f; }
+  h1, h2, h3 { overflow-wrap: break-word; min-width: 0; text-wrap: balance; font-weight: 400; }
+  p { text-wrap: pretty; }
+
+  button, a { touch-action: manipulation; }
+
+  /* Focus: an ember ring, clear of the element (6:1 on void) */
+  :focus-visible {
+    outline: 2px solid var(--ember);
+    outline-offset: 4px;
+    transition: none;
+  }
+
+  ::selection { background: var(--ember); color: var(--void); }
+
+  ::-webkit-scrollbar       { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--void); }
+  ::-webkit-scrollbar-thumb { background: var(--line); }
 }
 
-/* ─── Glassmorphism panels ────────────────────────────────────────────────── */
-.glass-panel {
-  background: rgba(11, 12, 16, 0.70);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-}
+@layer components {
+  /* Page frame: 1440 at most, gutters grow on wide screens */
+  .frame {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
 
-.glass-panel-hover {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  border-radius: 12px;
-}
-.glass-panel-hover:hover {
-  border-color: rgba(255, 68, 31, 0.35);
-  box-shadow: 0 0 40px -8px rgba(255, 68, 31, 0.20);
-}
+  /* The 12-column desktop grid (one column on phones) */
+  .grid-12 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 24px;
+  }
+  @media (min-width: 1024px) {
+    .grid-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  }
 
-/* ─── Glow utilities ──────────────────────────────────────────────────────── */
-.glow-ember      { text-shadow: 0 0 24px rgba(255, 68, 31, 0.55); }
-.glow-box-ember  { box-shadow: 0 0 48px -12px rgba(255, 68, 31, 0.30); }
-.glow-box-chrome { box-shadow: 0 0 48px -12px rgba(226, 232, 240, 0.12); }
+  .section { padding-block: var(--section); }
 
-/* ─── Noise overlay ───────────────────────────────────────────────────────── */
-.bg-noise {
-  background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 0);
-  background-size: 24px 24px;
-}
+  /* The wordmark: Nistha in capitals, exactly as the label has set it */
+  .wordmark {
+    font-family: var(--font-mark);
+    font-weight: normal;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
 
-/* ─── 35mm Film Grain ─────────────────────────────────────────────────────── */
-.film-grain {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 999;
-  opacity: 0.028;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
+  /* Headlines: Bodoni Moda, large, tight, sentence case */
+  .headline {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+  }
 
-/* ─── Cyber grid ──────────────────────────────────────────────────────────── */
-.cyber-grid {
-  background-size: 40px 40px;
-  background-image:
-    linear-gradient(to right,  rgba(255,255,255,0.018) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.018) 1px, transparent 1px);
-}
+  /* Small labels: spaced capitals, never under 13px */
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
 
-/* ─── Nistha display font helper class ───────────────────────────────────── */
-.font-nistha {
-  font-family: 'nistha', 'Syne', sans-serif;
-  font-weight: normal;
-  /* Nistha has generous built-in spacing — tighten slightly for display use */
-  letter-spacing: 0.04em;
-}
+  .num { font-variant-numeric: tabular-nums lining-nums; }
 
-/* ─── SOFT UI: global edge-softening overrides ────────────────────────────
-   Replaces the stiff sharp-edged components site-wide.  All buttons,
-   cards, drawers, modals get 10-14px radius; small chips/tags get 6px.    */
+  /* Mono labels from the original site: Space Mono in spaced capitals */
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
 
-/* Buttons that use border class without explicit rounded-* */
-button:not([class*="rounded"]) {
-  border-radius: 8px;
-}
+  /* The specimen card, after the original site */
+  .crop {
+    position: absolute;
+    z-index: 3;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1;
+    color: rgb(var(--chrome-600-rgb));
+    pointer-events: none;
+  }
+  .crop-tl { top: 8px; left: 8px; }
+  .crop-tr { top: 8px; right: 8px; }
+  .crop-bl { bottom: 8px; left: 8px; }
+  .crop-br { bottom: 8px; right: 8px; }
 
-/* Sharp border containers — drawers, sheets, catalog cards */
-.border.border-white\/\[0\.08\],
-.border.border-white\/20,
-.border.border-white\/15,
-.border.border-white\/10 {
-  border-radius: 10px;
-}
+  .specimen-tag {
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(var(--chrome-200-rgb));
+    background: rgb(var(--void-rgb) / 0.7);
+    border: 1px solid rgb(var(--bone-100-rgb) / 0.1);
+    border-radius: 9999px;
+    padding: 5px 12px;
+  }
+  .specimen-no {
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 1;
+    color: rgb(var(--ember-400-rgb) / 0.35);
+    transition: color 500ms ease;
+  }
+  .specimen:hover .specimen-no { color: rgb(var(--ember-400-rgb) / 0.55); }
+  .specimen-inspect {
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding-inline: 14px;
+    background: rgb(var(--bone-50-rgb));
+    color: var(--void);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: opacity 300ms ease, background-color 300ms ease;
+  }
+  .specimen-inspect:hover { background: var(--ember); }
+  .specimen-acquire {
+    min-height: 44px;
+    padding-inline: 16px;
+    border: 1px solid rgb(var(--bone-100-rgb) / 0.22);
+    color: rgb(var(--chrome-200-rgb));
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: border-color 300ms ease, background-color 300ms ease, color 300ms ease;
+  }
+  .specimen-acquire:hover { border-color: var(--text); background: rgb(var(--bone-100-rgb) / 0.1); color: var(--text); }
+  .specimen-acquire:active, .specimen-inspect:active { transform: scale(0.97); }
+  /* Inspect waits for hover where there is hover; touch screens always see it */
+  @media (hover: hover) {
+    .specimen-inspect { opacity: 0; }
+    .specimen:hover .specimen-inspect, .specimen-inspect:focus-visible { opacity: 1; }
+  }
+  @media (min-width: 640px) {
+    .specimen-tag { font-size: 12px; }
+    .specimen-no { font-size: 60px; }
+  }
 
-/* Pill/chip overrides — mono badge labels stay pill-shaped */
-.font-mono.text-\[9px\],
-.font-mono.text-\[10px\] {
-  border-radius: 6px;
+  /* Text link: a hairline under it that draws across on hover */
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .text-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    height: 1px;
+    background: currentColor;
+    transform-origin: right;
+    transition: transform 500ms var(--ease-quiet);
+  }
+  .text-link:hover::after { transform: scaleX(0); }
+
+  /* Buttons: an ember block with void text, or a bone hairline outline. Square, flat. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 52px;
+    padding-inline: 32px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 1px solid currentColor;
+    transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, transform 150ms ease;
+  }
+  .btn-primary { background: var(--ember); border-color: var(--ember); color: var(--void); }
+  .btn-primary:hover { background: rgb(var(--ember-400-rgb)); border-color: rgb(var(--ember-400-rgb)); }
+  .btn-primary:active, .btn-line:active { transform: scale(0.98); }
+  .btn-line { background: transparent; color: var(--text); }
+  .btn-line:hover { background: var(--text); border-color: var(--text); color: var(--void); }
+  .btn:disabled { cursor: default; }
+
+  /* The dock's trapezoid: slanted sides lean in at the top. The obsidian body
+     sits just inside the ember one, leaving a 1px ember edge along the top and slants. */
+  .dock-edge { clip-path: polygon(var(--dock-slant) 0, calc(100% - var(--dock-slant)) 0, 100% 100%, 0 100%); }
+  .dock-body { clip-path: polygon(calc(var(--dock-slant) + 0.85px) 0, calc(100% - var(--dock-slant) - 0.85px) 0, calc(100% - 1.2px) 100%, 1.2px 100%); }
+
+  /* Fold-outs: native details, no browser marker */
+  .fold summary::-webkit-details-marker { display: none; }
+
+  /* Headline helpers: each word clips itself as its line rises */
+  .split-clip { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.12em; margin-bottom: -0.12em; }
+  .split-word { display: inline-block; will-change: transform; }
 }
 
 /* ─── Hide scrollbar (no-scrollbar util) ─────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ─── Fade-in animation (used by DossierSheet / CartDrawer overlays) ─────── */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+/* ─── Lenis smooth scroll base rules ─────────────────────────────────────── */
+html.lenis, html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
+/* ─── Accessibility helpers ──────────────────────────────────────────────── */
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: -80px;
+  z-index: 200;
+  padding: 12px 16px;
+  background: var(--ember);
+  color: var(--void);
+  font-size: 16px;
+  font-weight: 500;
 }
-.animate-fadeIn { animation: fadeIn 0.25s ease-out both; }
+.skip-link:focus { top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .text-link::after { transition: none; }
+}

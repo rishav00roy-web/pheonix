@@ -1,230 +1,312 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowDown, Compass } from 'lucide-react';
-import { motion, useScroll, useTransform, useReducedMotion } from 'motion/react';
-import { soundManager } from '../utils/audio';
+import { useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+import './Hero.css';
 
-interface HeroProps {
-  onExploreClick: () => void;
-  onSelectCategory: (cat: string) => void;
-  selectedCategory: string;
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+
+const LOGO_SRC = '/brand/logo.webp';
+const WORD = 'PHEONIX';
+const EMBER = [255, 120, 73] as const;
+
+type Spark = {
+  tx: number; ty: number;          // home position inside the crest
+  sx: number; sy: number;          // where it rises from
+  r: number; g: number; b: number; // colour sampled from the crest
+  delay: number;                   // 0..0.45 share of the assemble timeline
+  drift: number;                   // how far it flies on the scroll burst
+  sway: number;
+};
+
+type Ember = { x: number; y: number; v: number; size: number; life: number; phase: number };
+
+const prefersReducedMotion = () =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Samples the crest's opaque pixels into spark targets laid over the crest image's box. */
+function sampleCrest(img: HTMLImageElement, slot: DOMRect, host: DOMRect, budget: number): Spark[] {
+  const w = Math.max(1, Math.round(slot.width));
+  const h = Math.max(1, Math.round(slot.height));
+  const step = Math.max(2, Math.round(Math.sqrt((w * h) / budget)));
+  const off = document.createElement('canvas');
+  off.width = w;
+  off.height = h;
+  const ctx = off.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return [];
+  ctx.drawImage(img, 0, 0, w, h);
+  const { data } = ctx.getImageData(0, 0, w, h);
+  const ox = slot.left - host.left;
+  const oy = slot.top - host.top;
+  const sparks: Spark[] = [];
+  for (let y = 0; y < h; y += step) {
+    for (let x = 0; x < w; x += step) {
+      const i = (y * w + x) * 4;
+      if (data[i + 3] < 140) continue;
+      sparks.push({
+        tx: ox + x,
+        ty: oy + y,
+        sx: ox + x + (Math.random() - 0.5) * w * 0.9,
+        sy: host.height + Math.random() * host.height * 0.35,
+        r: data[i], g: data[i + 1], b: data[i + 2],
+        delay: Math.random() * 0.45,
+        drift: 0.35 + Math.random() * 0.9,
+        sway: (Math.random() - 0.5) * 2,
+      });
+    }
+  }
+  return sparks;
 }
 
-const RUNWAY_LOOKS = [
-  {
-    id: 'look-1',
-    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=2400&q=95',
-  },
-  {
-    id: 'look-2',
-    image: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=2400&q=95',
-  },
-  {
-    id: 'look-3',
-    image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2400&q=95',
-  },
-];
+export default function Hero() {
+  const root = useRef<HTMLElement>(null);
 
-const CATEGORIES = [
-  { id: 'all',         label: 'All (14)' },
-  { id: 'outerwear',   label: 'Outerwear (3)' },
-  { id: 'tops',        label: 'Knits & Tops (3)' },
-  { id: 'dresses',     label: 'Column Dresses (2)' },
-  { id: 'trousers',    label: 'Trousers (2)' },
-  { id: 'footwear',    label: 'Footwear (2)' },
-  { id: 'accessories', label: 'Accessories (2)' },
-];
+  useGSAP(
+    (_, contextSafe) => {
+      const host = root.current;
+      if (!host) return;
+      const canvas = host.querySelector<HTMLCanvasElement>('.hero-sparks');
+      const crest = host.querySelector<HTMLImageElement>('.hero-crest img');
+      const torch = host.querySelector<HTMLElement>('.hero-torch');
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !crest || !ctx) return;
 
-// Font size for PHEONIX wordmark.
-// Single clamp works across all viewports in a side-by-side row:
-// at 390px mobile: 12vw = ~47px — bold and readable in a half-width column.
-// at 1400px desktop: 8vw = ~112px, capped at 9.5rem.
-const SIZE_CLAMP   = 'clamp(2.4rem, 8vw, 9.5rem)';
-// Logo height = 1.8× text for visual mass balance (wide-wing shape).
-const LOGO_CLAMP   = 'clamp(4.32rem, 14.4vw, 17.1rem)';
+      const reduced = prefersReducedMotion();
+      const letters = host.querySelectorAll('.hero-word span');
 
-export const Hero: React.FC<HeroProps> = ({
-  onExploreClick,
-  onSelectCategory,
-  selectedCategory,
-}) => {
-  const [activeLookIndex, setActiveLookIndex] = useState(0);
-  const containerRef = useRef<HTMLElement>(null);
-  const reduceMotion = useReducedMotion();
+      if (reduced) {
+        host.classList.add('is-still');
+        return;
+      }
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end start'],
-  });
+      // The pieces are visible by default; arming holds them back for the intro.
+      host.classList.add('is-armed');
+      gsap.set(letters, { yPercent: 115, opacity: 0 });
+      gsap.set('.hero-tag', { y: 10 });
 
-  const yBg        = useTransform(scrollYProgress, [0, 1], reduceMotion ? ['0%', '0%'] : ['0%', '22%']);
-  const scaleBg    = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1, 1]       : [1, 1.08]);
-  const yContent   = useTransform(scrollYProgress, [0, 1], reduceMotion ? ['0%', '0%'] : ['0%', '-18%']);
-  const opacityTop = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
+      // ── state shared by the draw loop ──────────────────────────────────
+      const state = { assemble: 0, burst: 0 };
+      let sparks: Spark[] = [];
+      let embers: Ember[] = [];
+      let width = 0;
+      let height = 0;
+      // The loop draws only while the hero is in view and the tab is showing.
+      let inView = true;
+      let tabShown = !document.hidden;
+      let running = inView && tabShown;
 
-  useEffect(() => {
-    const timer = setInterval(
-      () => setActiveLookIndex(prev => (prev + 1) % RUNWAY_LOOKS.length),
-      7000
-    );
-    return () => clearInterval(timer);
-  }, []);
+      const seedEmbers = () => {
+        const count = width < 640 ? 38 : 70;
+        embers = Array.from({ length: count }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          v: 0.15 + Math.random() * 0.55,
+          size: 0.6 + Math.random() * 1.6,
+          life: Math.random(),
+          phase: Math.random() * Math.PI * 2,
+        }));
+      };
+
+      const layout = () => {
+        const box = host.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = box.width;
+        height = box.height;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        sparks = sampleCrest(crest, crest.getBoundingClientRect(), box, width < 640 ? 2200 : 3600);
+        if (torch) gsap.set(torch, { x: width / 2, y: height / 2 });
+        seedEmbers();
+      };
+
+      const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+
+      const draw = () => {
+        if (!running) return;
+        ctx.clearRect(0, 0, width, height);
+
+        // Rising embers, always on.
+        for (const e of embers) {
+          e.y -= e.v * (1 + state.burst * 3);
+          e.x += Math.sin((e.y + e.phase * 60) / 70) * 0.25;
+          e.life += 0.004;
+          if (e.y < -10 || e.life > 1) {
+            e.y = height + 10;
+            e.x = Math.random() * width;
+            e.life = 0;
+          }
+          const fade = Math.sin(e.life * Math.PI) * 0.75;
+          ctx.fillStyle = `rgba(${EMBER[0]},${EMBER[1]},${EMBER[2]},${fade})`;
+          ctx.fillRect(e.x, e.y, e.size, e.size);
+        }
+
+        // The crest's sparks: shown while forming and when bursting apart.
+        const formed = state.assemble >= 1 && state.burst <= 0;
+        if (!formed) {
+          for (const s of sparks) {
+            const local = Math.min(1, Math.max(0, (state.assemble - s.delay) / (1 - 0.45)));
+            const k = ease(local);
+            let x = s.sx + (s.tx - s.sx) * k;
+            let y = s.sy + (s.ty - s.sy) * k;
+            let alpha = Math.min(1, local * 1.4);
+            if (state.burst > 0) {
+              const b = state.burst;
+              y -= b * height * 0.9 * s.drift;
+              x += Math.sin(b * 6 + s.sway * 3) * 40 * b * s.sway;
+              alpha = Math.max(0, 1 - b * 1.25);
+            }
+            if (alpha <= 0.01) continue;
+            // Sparks arrive ember-hot and cool into the crest's own colours.
+            const r = Math.round(EMBER[0] + (s.r - EMBER[0]) * k);
+            const g = Math.round(EMBER[1] + (s.g - EMBER[1]) * k);
+            const bl = Math.round(EMBER[2] + (s.b - EMBER[2]) * k);
+            ctx.fillStyle = `rgba(${r},${g},${bl},${alpha})`;
+            ctx.fillRect(x, y, 1.6, 1.6);
+          }
+        }
+      };
+
+      // Runs after the crest loads, so it must join the GSAP context to be cleaned up.
+      const start = contextSafe!(() => {
+        layout();
+        gsap.ticker.add(draw);
+
+        const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        intro
+          .to('.hero-rule', { scaleY: 1, scaleX: 1, duration: 1.1, ease: 'expo.inOut' }, 0)
+          .to('.hero-diamond', { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(3)' }, 0.75)
+          .to(state, { assemble: 1, duration: 2.6, ease: 'none' }, 0.2)
+          .to(crest, { opacity: 1, duration: 0.7, ease: 'power2.out' }, 2.55)
+          .to(letters, { yPercent: 0, opacity: 1, duration: 0.9, stagger: 0.07 }, 1.1)
+          .to('.hero-tag', { opacity: 1, y: 0, duration: 0.8 }, 1.9)
+          .to('.hero-foot', { opacity: 1, duration: 0.8 }, 2.3)
+          .add(() => host.classList.add('is-lit'), 3.2);
+
+        // Scroll: the crest bursts back into embers and the word parts.
+        gsap.timeline({
+          scrollTrigger: {
+            trigger: host,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.6,
+            onToggle: (self) => {
+              inView = self.isActive || self.progress < 1;
+              running = inView && tabShown;
+            },
+          },
+        })
+          .to(crest, { opacity: 0, duration: 0.12, ease: 'none' }, 0)
+          .to(state, { burst: 1, duration: 0.85, ease: 'none' }, 0)
+          .to('.hero-word span', { yPercent: -60, opacity: 0, stagger: { each: 0.02, from: 'center' }, duration: 0.5 }, 0.05)
+          .to('.hero-rule', { scaleY: 0, duration: 0.5 }, 0.05)
+          .to(['.hero-tag', '.hero-foot'], { opacity: 0, duration: 0.3 }, 0);
+      });
+
+      // Pointer torchlight (desktop only).
+      const fine = window.matchMedia('(pointer: fine)').matches;
+      let onMove: ((e: PointerEvent) => void) | null = null;
+      if (torch && fine) {
+        const tx = gsap.quickTo(torch, 'x', { duration: 0.9, ease: 'power3' });
+        const ty = gsap.quickTo(torch, 'y', { duration: 0.9, ease: 'power3' });
+        onMove = (e) => {
+          const box = host.getBoundingClientRect();
+          tx(e.clientX - box.left);
+          ty(e.clientY - box.top);
+        };
+        host.addEventListener('pointermove', onMove);
+      }
+
+      // Re-sample only when the width changes or the height changes a lot, so a
+      // phone's address bar sliding in and out doesn't reset the embers.
+      let resizeTimer = 0;
+      let lastW = window.innerWidth;
+      let lastH = window.innerHeight;
+      const onResize = () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          if (w === lastW && Math.abs(h - lastH) < 120) return;
+          lastW = w;
+          lastH = h;
+          layout();
+        }, 150);
+      };
+      window.addEventListener('resize', onResize);
+      const onVisibility = () => {
+        tabShown = !document.hidden;
+        running = inView && tabShown;
+      };
+      document.addEventListener('visibilitychange', onVisibility);
+
+      // If the crest never loads, show everything in place rather than leave it held back.
+      const fallback = () => {
+        host.classList.remove('is-armed');
+        host.classList.add('is-still');
+        gsap.set([letters, '.hero-tag'], { clearProps: 'all' });
+      };
+
+      if (crest.complete && crest.naturalWidth) start();
+      else if (crest.complete) fallback();
+      else {
+        crest.addEventListener('load', start, { once: true });
+        crest.addEventListener('error', fallback, { once: true });
+      }
+
+      return () => {
+        crest.removeEventListener('load', start);
+        crest.removeEventListener('error', fallback);
+        host.classList.remove('is-lit', 'is-armed');
+        gsap.ticker.remove(draw);
+        window.clearTimeout(resizeTimer);
+        window.removeEventListener('resize', onResize);
+        document.removeEventListener('visibilitychange', onVisibility);
+        if (onMove) host.removeEventListener('pointermove', onMove);
+      };
+    },
+    { scope: root },
+  );
 
   return (
-    <section
-      id="hero-section"
-      ref={containerRef}
-      className="relative w-full overflow-hidden border-b border-white/[0.06] bg-void"
-      style={{ minHeight: '100svh' }}
-    >
-      {/* ── Background ────────────────────────────────────────────────────── */}
-      <motion.div
-        style={{ y: yBg, scale: scaleBg }}
-        className="absolute inset-0 z-0 will-change-transform"
-      >
-        {RUNWAY_LOOKS.map((look, idx) => (
-          <img
-            key={look.id}
-            src={look.image}
-            alt=""
-            aria-hidden="true"
-            className={`absolute inset-0 w-full h-full object-cover object-center
-                        brightness-[0.28] contrast-125
-                        transition-opacity duration-[1400ms] ease-in-out pointer-events-none
-                        ${activeLookIndex === idx ? 'opacity-100' : 'opacity-0'}`}
-          />
-        ))}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/70 pointer-events-none" />
-      </motion.div>
+    <section ref={root} className="hero" aria-label="Pheonix">
+      <div className="hero-grid" aria-hidden="true" />
+      <div className="hero-torch" aria-hidden="true" />
+      <canvas className="hero-sparks" aria-hidden="true" />
 
-      {/* ── Full-height flex column layout ────────────────────────────────── */}
-      <div
-        className="relative z-10 flex flex-col"
-        style={{ minHeight: '100svh' }}
-      >
-        {/* TOP: look switcher dots */}
-        <div className="flex items-center justify-center gap-2.5 pt-8 sm:pt-12 pb-0 shrink-0">
-          {RUNWAY_LOOKS.map((look, idx) => (
-            <button
-              key={look.id}
-              onClick={() => { soundManager.playClick(); setActiveLookIndex(idx); }}
-              aria-label={`Look ${idx + 1}`}
-              className={`h-[2px] transition-all duration-300 rounded-full ${
-                activeLookIndex === idx
-                  ? 'w-10 bg-white'
-                  : 'w-3 bg-white/25 hover:bg-white/50'
-              }`}
-            />
-          ))}
+      <div className="hero-stage">
+        <div className="hero-crest">
+          <span className="hero-crest-inner">
+            <img src={LOGO_SRC} alt="Pheonix crest" width={951} height={565} fetchPriority="high" draggable={false} />
+          </span>
         </div>
 
-        {/* MIDDLE: grows to fill space, centers the split composition */}
-        <motion.div
-          style={{ y: yContent, opacity: opacityTop }}
-          className="flex-1 flex items-center justify-center will-change-transform px-6 sm:px-10 lg:px-16 py-8"
-        >
-          {/*
-            Always side-by-side on every viewport — no stacking.
-            Both halves items-center so logo midline = text midline.
-          */}
-          <div className="flex flex-row items-center justify-center w-full max-w-6xl gap-0">
+        <div className="hero-rule" aria-hidden="true">
+          <span className="hero-diamond">◆</span>
+        </div>
 
-            {/* LEFT HALF — logo, 1.8× text height for visual mass balance */}
-            <div className="flex-1 flex items-center justify-center pr-4 sm:pr-10 lg:pr-14">
-              <img
-                src="/brand-logo.png"
-                alt="Pheonix"
-                draggable={false}
-                style={{ height: LOGO_CLAMP, width: 'auto' }}
-                className="object-contain select-none pointer-events-none"
-              />
-            </div>
+        <div className="hero-type">
+          <h1 className="hero-word" aria-label={WORD}>
+            {WORD.split('').map((ch, i) => (
+              <span key={i} aria-hidden="true">{ch}</span>
+            ))}
+          </h1>
+          <p className="hero-tag"><span>Bars from the hills.</span> <span>Threads for the street.</span></p>
+        </div>
+      </div>
 
-            {/* ── DIVIDER — ember diamond, visible on all viewports ─────── */}
-            <div className="shrink-0 flex flex-col items-center justify-center self-stretch px-2 sm:px-4">
-              <div className="flex-1 w-px bg-gradient-to-b from-transparent to-ember-500/40" />
-              <div
-                className="shrink-0 text-ember-500/70 font-mono select-none"
-                style={{ fontSize: '14px', lineHeight: 1 }}
-                aria-hidden="true"
-              >◆</div>
-              <div className="flex-1 w-px bg-gradient-to-t from-transparent to-ember-500/40" />
-            </div>
-
-            {/* RIGHT HALF — wordmark + tagline */}
-            <div className="flex-1 flex items-center justify-center sm:justify-start pl-4 sm:pl-10 lg:pl-14">
-              <div>
-                <h1
-                  className="font-nistha text-white select-none leading-none"
-                  style={{ fontSize: SIZE_CLAMP, letterSpacing: '0.06em' }}
-                >
-                  PHEONIX
-                </h1>
-                {/* tagline */}
-                <p
-                  className="font-mono uppercase tracking-[0.10em] sm:tracking-[0.22em] text-zinc-400 mt-2 sm:mt-3"
-                  style={{ fontSize: '11px' }}
-                >
-                  Bars from the hills.<br className="sm:hidden" /> Threads for the street.
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </motion.div>
-
-        {/* BOTTOM: CTA + category bar */}
-        <motion.div
-          style={{ opacity: opacityTop }}
-          className="shrink-0 flex flex-col items-center gap-4 pb-5 sm:pb-6"
-        >
-          <button
-            onClick={() => { soundManager.playClick(); onExploreClick(); }}
-            className="px-8 sm:px-12 py-3.5 border border-white bg-white text-black
-                       font-mono font-bold uppercase tracking-[0.24em] rounded-lg
-                       hover:bg-ember-500 hover:border-ember-500 hover:text-white
-                       transition-all duration-300 shadow-2xl flex items-center gap-3 group"
-            style={{ fontSize: '13px' }}
-          >
-            <span>Explore Collection (14)</span>
-            <ArrowDown className="w-3.5 h-3.5 transition-transform group-hover:translate-y-1" />
-          </button>
-
-          {/* Category bar */}
-          <div className="w-full max-w-5xl px-4">
-            <div className="flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar gap-1.5 sm:gap-2 py-1">
-              <span
-                className="font-mono text-zinc-500 uppercase tracking-widest mr-1 shrink-0 hidden sm:inline-flex items-center gap-1.5"
-                style={{ fontSize: '11px' }}
-              >
-                <Compass className="w-3 h-3 text-ember-400" /> WARDROBE:
-              </span>
-              {CATEGORIES.map(cat => {
-                const isActive = selectedCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      soundManager.playClick();
-                      onSelectCategory(cat.id);
-                      onExploreClick();
-                    }}
-                    className={`px-3.5 py-1.5 font-mono uppercase tracking-wider
-                                transition-all duration-200 border shrink-0 rounded-md ${
-                      isActive
-                        ? 'border-white bg-white text-black font-bold shadow-md'
-                        : 'border-white/10 bg-black/40 text-zinc-400 hover:text-white hover:border-white/25'
-                    }`}
-                    style={{ fontSize: '11px' }}
-                  >
-                    {cat.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
-
+      <div className="hero-foot">
+        <p className="hero-coords">
+          <span>26.75° N · 94.22° E</span>
+          <span>Jorhat, Assam</span>
+        </p>
+        <p className="hero-cue" aria-hidden="true">
+          <span>Scroll</span>
+          <i />
+        </p>
       </div>
     </section>
   );
-};
+}

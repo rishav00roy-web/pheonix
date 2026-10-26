@@ -1,36 +1,22 @@
-# Storyboard
+# Storyboard: Ash to Flame
 
-## Director Brief
-- Director: Denis Villeneuve (*Blade Runner 2049* / *Dune*) with Jonathan Glazer tactile dread
-- One-sentence visual thesis: An austere, colossal digital reel where garments hover like monolithic biological relics in an obsidian void.
-- 3 Signature techniques:
-  1. 100svh Scene framing: Each piece commands the entire mobile viewport.
-  2. Hairline HUD typography: Technical corner coordinates (`[FRAME 01]`, `SPECIMEN ID`, `EDITION`).
-  3. Interactive Kinetic Anatomy: The Monster Maw heel jaw hinges open upon thumb touch with mechanical audio feedback.
+## Site cinematic grammar
+- Shell: fixed hairline nav (crest left, sound + vault right). No section eyebrows except the collection filter bar.
+- Framing: hairline crop marks are the signature frame on every image.
+- Heat cadence: a fixed ember field behind the page grows with total scroll progress. Collection pieces warm by index (first ash-grey, last fully saturated).
+- Shape: 0px corners everywhere. One accent (Ember). Gold only for money and edition numbers.
 
-## Narrative Arc (The Film Reel)
+## Scenes
+0. Ignition (first visit per session, ~1.2s, tap to skip): an ember line draws across the void, the crest ignites, sparks burst, the hero is revealed.
+1. Ash hero: full-screen look in greyscale. PHEONIX at 26vw mobile / 18vw desktop with the colour photograph showing through the letters. On scroll the letters drift apart like ash while the colour photograph fades in behind them. Tagline + one CTA in the bottom third.
+2. Ember collection: sticky swipeable category bar (with Reel / Index switch).
+   - Mobile reel: each piece fills the phone (100svh, snap proximity), inner parallax, thumb bar (07 / 14, gold price, Dossier, Add).
+   - Desktop runway: pinned film strip driven by vertical scroll, active piece large and lit, neighbours smaller and dimmed.
+   - Index: ledger rows.
+3. Dossier: tapped image grows into the sheet (layoutId), drag down to close, size picker + Add pinned in thumb reach, N° 03 of 40 in gold.
+4. Rebirth: drag slider over one signature piece (Phoenix Ash Mohair), ash-grey on one side, full colour on the other.
+5. Manifest: scorched ledger receipt, typed reference ID, WhatsApp checkout with a pre-filled order.
+6. Flame footer: crest fully lit, rising ember sparks, contact links.
 
-```
-Scene 00: MONOLITH PROLOGUE (The Void Opening Title)
-   ↓ (Scroll / Swipe)
-Scene 01: PREDATOR ANATOMY (The Chimera Maw Stiletto with Interactive Jaws)
-   ↓ (Scroll / Swipe)
-Scene 02: KINETIC CANOPY (Vortex Asymmetric Storm Trench)
-   ↓ (Scroll / Swipe)
-Scene 03: VERTEBRAL EXOSKELETON (Embossed Calfskin Moto)
-   ↓ (Scroll / Swipe)
-Scene 04: HYDRA LIQUID DRAPE (Liquid Obsidian Slit Column)
-   ↓ (Scroll / Swipe)
-Scene 05: ASH METAMORPHOSIS (Deconstructed Mohair Knit)
-   ↓ (Scroll / Swipe)
-Scene 06: CHRYSALIS CARAPACE (Exoskeleton Polymer Bodice)
-   ↓ (Scroll / Swipe)
-Scene 07: ARCHIVE DOSSIER & ACQUISITION MANIFEST
-```
-
-## Mobile-First Ergonomic HUD
-- **Top Sticky Bar**: Hairline brand mark `PHEONIX`, soundscape status, and view switcher `[REEL / INDEX]`.
-- **Bottom Thumb Deck**:
-  - Left: Specimen counter (`01 / 06`)
-  - Center: `[ TAP FOR DOSSIER ]` (Opens bottom sheet with composition, sizing, and concept)
-  - Right: Quick Acquire button with price.
+## Restraint statement
+No marquees, no scroll cue, no counters, no badges over images except the crop marks and one code line. One heavy interaction per scene.
