@@ -13,7 +13,7 @@ import { useCart } from './lib/bag';
 import { TransitionProvider } from './lib/transition';
 import { findProduct } from './data/products';
 
-export function App() {
+function App() {
   return (
     <TransitionProvider>
       <CartProvider>

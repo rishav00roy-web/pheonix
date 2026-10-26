@@ -3,7 +3,7 @@ import { gsap, MOTION_OK, prefersReducedMotion, useGSAP } from '../lib/smoothScr
 import { CaptionsIcon, MuteIcon, PauseIcon, PlayIcon, RestartIcon, VolumeIcon } from './icons';
 import './CassettePlayer.css';
 
-export interface CaptionTrack {
+interface CaptionTrack {
   readonly default?: boolean;
   readonly label: string;
   readonly src: string;
@@ -261,9 +261,7 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
             <span aria-hidden="true" className="deck-face deck-right">
               <span className="deck-wheel" />
             </span>
-            <span aria-hidden="true" className="deck-face deck-top">
-              <span className="deck-slot" />
-            </span>
+            <span aria-hidden="true" className="deck-face deck-top" />
 
             {/* First in the source so focus reaches the keys before the seek groove below them */}
             <div className="deck-keys">
@@ -293,7 +291,7 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
                   <div className="tape-label">
                     <div className="tape-head">
                       {artworkSrc && <img className="tape-art" src={artworkSrc} width={538} height={272} alt="" loading="lazy" decoding="async" />}
-                      <div className="tape-titles">
+                      <div>
                         {artist && <p className="tape-artist">{artist}</p>}
                         <p className="tape-title">{trackTitle}</p>
                       </div>
