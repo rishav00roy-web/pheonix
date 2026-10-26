@@ -1,207 +1,182 @@
-import React, { useState } from 'react';
-import { X, Trash2, Plus, Minus, CheckCircle2 } from 'lucide-react';
-import type { ManifestItem } from '../types';
-import { soundManager } from '../utils/audio';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { formatPrice, smallShot } from '../data/products';
+import { buildOrderMessage, useCart, whatsappLink, type BagLine } from '../lib/bag';
+import { gsap, prefersReducedMotion, setScrollLocked } from '../lib/smoothScroll';
+import { useTransition } from '../lib/pageTransition';
+import { BrandLogo } from './BrandLogo';
+import { CloseIcon, MinusIcon, PlusIcon, WhatsAppIcon } from './icons';
 
-interface CartDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  items: ManifestItem[];
-  onUpdateQuantity: (id: string, size: string, color: string, qty: number) => void;
-  onRemoveItem: (id: string, size: string, color: string) => void;
-  onClearCart: () => void;
-}
+// The bag: a right-hand drawer on obsidian. Checkout hands a pre-filled order to
+// WhatsApp. It stays mounted while it slides out, then leaves the page.
+export const CartDrawer: React.FC = () => {
+  const { isOpen } = useCart();
+  const [mounted, setMounted] = useState(isOpen);
+  const onClosed = useCallback(() => setMounted(false), []);
+  // Opening mounts the drawer at once; closing waits for the slide-out
+  if (isOpen && !mounted) setMounted(true);
 
-export const CartDrawer: React.FC<CartDrawerProps> = ({
-  isOpen,
-  onClose,
-  items,
-  onUpdateQuantity,
-  onRemoveItem,
-  onClearCart
-}) => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [orderComplete, setOrderComplete] = useState(false);
-  const [manifestCode, setManifestCode] = useState('');
+  useEffect(() => {
+    setScrollLocked(isOpen, 'bag');
+  }, [isOpen]);
 
-  if (!isOpen) return null;
+  return mounted ? <Drawer open={isOpen} onClosed={onClosed} /> : null;
+};
 
-  const total = items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+const Drawer: React.FC<{ open: boolean; onClosed: () => void }> = ({ open, onClosed }) => {
+  const { items, close, clear } = useCart();
+  const { go } = useTransition();
+  const [ref] = useState(() => `PHX-${Math.floor(100000 + Math.random() * 900000)}`);
+  const [sent, setSent] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const veil = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
-  const handleCheckout = () => {
-    soundManager.playChime();
-    setIsProcessing(true);
+  // Slide in on open, out on close, then unmount
+  useLayoutEffect(() => {
+    const t = prefersReducedMotion ? 0 : 1;
+    if (open) {
+      gsap.fromTo(veil.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4 * t });
+      gsap.fromTo(panel.current, { xPercent: 100 }, { xPercent: 0, duration: 0.7 * t, ease: 'power4.out' });
+    } else {
+      gsap.to(veil.current, { autoAlpha: 0, duration: 0.3 * t });
+      gsap.to(panel.current, { xPercent: 100, duration: 0.45 * t, ease: 'power3.in', onComplete: onClosed });
+    }
+  }, [open, onClosed]);
 
-    setTimeout(() => {
-      setManifestCode(`PHX-${Math.floor(100000 + Math.random() * 900000)}`);
-      setIsProcessing(false);
-      setOrderComplete(true);
-      onClearCart();
-    }, 1200);
-  };
+  // Focus moves in and returns to the opener on close; Escape closes
+  useEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus({ preventScroll: true });
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      opener?.focus?.({ preventScroll: true });
+    };
+  }, [open, close]);
+
+  const subtotal = items.reduce((acc, m) => acc + m.product.price * m.quantity, 0);
+  const pieces = items.reduce((acc, m) => acc + m.quantity, 0);
+  const href = useMemo(() => whatsappLink(buildOrderMessage(items, subtotal, ref)), [items, subtotal, ref]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-md bg-obsidian-950 text-white border-l border-white/15 h-full flex flex-col shadow-2xl">
-        
-        {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/brand-logo.png"
-              alt="Pheonix Seal"
-              className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(249,115,22,0.4)]"
-            />
+    <div className="fixed inset-0 z-[70] flex justify-end" role="dialog" aria-modal="true" aria-labelledby="bag-title">
+      <div ref={veil} className="absolute inset-0 bg-void/50" onClick={close} />
+      <aside ref={panel} className="relative w-full max-w-[480px] h-full flex flex-col bg-void text-bone-100 border-l border-obsidian-700">
+        <div className="shrink-0 px-6 pt-6 pb-5 border-b border-obsidian-700 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <BrandLogo small className="h-9 w-auto" />
             <div>
-              <span className="font-syne font-black text-base tracking-[0.2em] uppercase text-white block">
-                Acquisition Manifest
-              </span>
-              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                Atelier Vault Allocation
-              </span>
+              <h2 id="bag-title" className="headline text-[36px]">Your bag</h2>
+              <p className="text-[14px] text-chrome-400 num">Reference {ref}</p>
             </div>
           </div>
-
           <button
-            onClick={onClose}
-            className="p-1.5 border border-white/20 hover:bg-white hover:text-black text-zinc-400 transition-all"
-            aria-label="Close manifest"
+            ref={closeRef}
+            onClick={close}
+            className="w-12 h-12 -mr-2 flex items-center justify-center hover:bg-bone-100 hover:text-void active:bg-bone-100 active:text-void transition-colors duration-300"
+            aria-label="Close bag"
           >
-            <X className="w-4 h-4" />
+            <CloseIcon />
           </button>
         </div>
 
-        {/* Content */}
-        {orderComplete ? (
-          <div className="flex-1 p-8 flex flex-col items-center justify-center text-center space-y-6">
-            <div className="relative">
-              <img
-                src="/brand-logo.png"
-                alt="Pheonix Seal"
-                className="w-20 h-auto object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.45)] mx-auto mb-3"
-              />
-              <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-            </div>
-            <div>
-              <h3 className="font-nistha text-xl uppercase tracking-wider text-white">
-                Allocation Committed
-              </h3>
-              <p className="text-xs font-mono text-zinc-400 mt-2">
-                Garment artefacts recorded to private secure dispatch.
-              </p>
-            </div>
-            <div className="p-4 border border-white/15 bg-black/60 font-mono text-xs w-full text-center">
-              <span className="text-zinc-500 block mb-1 text-[10px] uppercase tracking-widest">Manifest Reference ID</span>
-              <span className="text-ember-400 font-bold text-sm tracking-[0.25em]">{manifestCode}</span>
-            </div>
+        {items.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center gap-6 px-8">
+            <BrandLogo small className="w-28 h-auto opacity-90" />
+            <p className="headline text-[32px]">Your bag is empty.</p>
+            <p className="text-chrome-400 max-w-[30ch]">Pieces you add will wait here until you order them on WhatsApp.</p>
             <button
               onClick={() => {
-                setOrderComplete(false);
-                onClose();
+                close();
+                setTimeout(() => go('/shop'), 300);
               }}
-              className="w-full py-4 border border-white bg-white text-black font-mono font-bold text-xs uppercase tracking-[0.25em] hover:bg-ember-500 hover:border-ember-500 hover:text-white transition-all"
+              className="btn btn-primary mt-2"
             >
-              Return to Collection
-            </button>
-          </div>
-        ) : items.length === 0 ? (
-          <div className="flex-1 p-8 flex flex-col items-center justify-center text-center space-y-3 font-mono">
-            <span className="text-xs text-zinc-500 uppercase tracking-widest">
-              [ NO SPECIMENS IN VAULT ]
-            </span>
-            <button
-              onClick={onClose}
-              className="mt-4 px-6 py-2.5 border border-white/20 text-xs text-white uppercase tracking-widest hover:border-white hover:bg-white/10 transition-all font-bold"
-            >
-              Browse Wardrobe
+              Shop the collection
             </button>
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {items.map((item, idx) => (
-                <div
-                  key={`${item.product.id}-${item.size}-${item.color}-${idx}`}
-                  className="flex gap-4 p-3.5 border border-white/10 bg-black/40"
-                >
-                  <div className="w-16 h-20 overflow-hidden bg-zinc-950 shrink-0 border border-white/10">
-                    <img
-                      src={item.product.imageUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-syne font-bold text-xs text-white uppercase line-clamp-1">
-                          {item.product.name}
-                        </span>
-                        <button
-                          onClick={() => onRemoveItem(item.product.id, item.size, item.color)}
-                          className="text-zinc-600 hover:text-red-400 transition-colors"
-                          aria-label="Remove"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <div className="text-[10px] font-mono text-zinc-500 mt-1">
-                        Size: {item.size} • Color: {item.color}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center gap-2 border border-white/15 px-2 py-0.5 bg-black/60 text-xs font-mono">
-                        <button
-                          onClick={() => onUpdateQuantity(item.product.id, item.size, item.color, item.quantity - 1)}
-                          className="text-zinc-400 hover:text-white"
-                        >
-                          <Minus className="w-2.5 h-2.5" />
-                        </button>
-                        <span className="w-4 text-center">{item.quantity}</span>
-                        <button
-                          onClick={() => onUpdateQuantity(item.product.id, item.size, item.color, item.quantity + 1)}
-                          className="text-zinc-400 hover:text-white"
-                        >
-                          <Plus className="w-2.5 h-2.5" />
-                        </button>
-                      </div>
-
-                      <div className="font-mono text-xs font-bold text-white">
-                        ${item.product.price * item.quantity}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <ul data-lenis-prevent className="flex-1 min-h-0 overflow-y-auto px-6 divide-y divide-obsidian-700">
+              {items.map((m) => (
+                <BagRow key={`${m.product.id}-${m.size}-${m.color}`} line={m} />
               ))}
-            </div>
+            </ul>
 
-            {/* Calculations & Submit */}
-            <div className="p-6 border-t border-white/10 bg-obsidian-950 space-y-3 font-mono text-xs">
-              <div className="flex justify-between text-zinc-500 text-[11px]">
-                <span>COURIER DISPATCH</span>
-                <span className="text-zinc-400">COMPLIMENTARY</span>
+            <div className="shrink-0 px-6 pt-5 pb-[calc(1.25rem+var(--safe-b))] border-t border-obsidian-700 space-y-4">
+              <div className="flex justify-between text-[15px] text-chrome-400">
+                <span>
+                  {pieces} {pieces === 1 ? 'piece' : 'pieces'}
+                </span>
+                <span>Shipping agreed on WhatsApp</span>
               </div>
-              <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-white/[0.08]">
-                <span>TOTAL DUE</span>
-                <span>${total} USD</span>
+              <div className="flex justify-between items-baseline">
+                <span className="text-[16px]">Subtotal</span>
+                <span className="text-[22px] num">{formatPrice(subtotal)}</span>
               </div>
 
-              <button
-                onClick={handleCheckout}
-                disabled={isProcessing}
-                className="w-full mt-2 py-4 border border-white bg-white text-black font-mono font-bold text-xs uppercase tracking-[0.25em] hover:bg-ember-500 hover:border-ember-500 hover:text-white transition-all duration-300 disabled:opacity-50"
-              >
-                {isProcessing ? 'CONFIRMING ALLOCATION...' : 'LOCK ACQUISITION'}
-              </button>
+              <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => setSent(true)} className="btn btn-primary w-full">
+                <WhatsAppIcon />
+                Order on WhatsApp
+              </a>
+
+              {sent && (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[15px] text-chrome-400">Sent with reference {ref}</p>
+                  {/* Destructive: asks once more before emptying the bag */}
+                  <button
+                    onClick={() => (confirmClear ? clear() : setConfirmClear(true))}
+                    onBlur={() => setConfirmClear(false)}
+                    className={`h-11 px-4 text-[15px] border transition-colors ${confirmClear ? 'border-bone-100' : 'border-obsidian-700 hover:border-bone-100'}`}
+                  >
+                    {confirmClear ? 'Tap again to clear' : 'Clear bag'}
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}
-
-      </div>
+      </aside>
     </div>
+  );
+};
+
+/** One line in the bag: 4:5 thumbnail, name, size, a square stepper, the line price. */
+const BagRow: React.FC<{ line: BagLine }> = ({ line: m }) => {
+  const { setQuantity, remove } = useCart();
+  const step = (d: number) => setQuantity(m.product.id, m.size, m.color, m.quantity + d);
+  return (
+    <li className="py-5 flex gap-4">
+      <img src={smallShot(m.product.gallery[0])} alt="" className="w-20 aspect-[4/5] object-cover shrink-0 bg-obsidian-900" />
+      <div className="flex-1 min-w-0">
+        <p className="text-[16px] leading-tight">{m.product.name}</p>
+        <p className="mt-1 text-[15px] text-chrome-400">
+          Size {m.size}
+          {m.color ? `, ${m.color.toLowerCase()}` : ''}
+        </p>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="flex items-center border border-obsidian-700">
+            <button onClick={() => step(-1)} className="w-11 h-11 flex items-center justify-center hover:bg-obsidian-800 active:bg-obsidian-900" aria-label={`One fewer ${m.product.name}`}>
+              <MinusIcon className="w-4 h-4" />
+            </button>
+            <span className="w-9 text-center text-[16px] num border-x border-obsidian-700 leading-[44px]">{m.quantity}</span>
+            <button onClick={() => step(1)} className="w-11 h-11 flex items-center justify-center hover:bg-obsidian-800 active:bg-obsidian-900" aria-label={`One more ${m.product.name}`}>
+              <PlusIcon className="w-4 h-4" />
+            </button>
+          </div>
+          <span className="text-[16px] num">{formatPrice(m.product.price * m.quantity)}</span>
+        </div>
+      </div>
+      <button
+        onClick={() => remove(m.product.id, m.size, m.color)}
+        className="self-start w-11 h-11 -mr-2 flex items-center justify-center text-chrome-400 hover:text-ember-400"
+        aria-label={`Remove ${m.product.name}`}
+      >
+        <CloseIcon className="w-4 h-4" />
+      </button>
+    </li>
   );
 };

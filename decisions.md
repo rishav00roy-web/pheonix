@@ -56,3 +56,23 @@
 1. **Colossal Scale vs Solitary Subject**: Giant monolithic typography framing solitary, highly textured garments.
 2. **Absence as Design**: Heavy negative space, slow deliberate breathing room between elements.
 3. **Tactile Biomechanics**: Clean clinical geometry broken by startling organic/predatory features (the monster jaw heel).
+
+---
+
+## Revision 2026-10-25: "Ash to Flame"
+
+- Entry mode: Step-by-step (owner approved the "Ash to Flame" plan).
+- Thesis: the phoenix life cycle as a scroll. The page opens cold and ash-grey and heats up section by section, ending fully lit at the footer.
+- Owner: AJ Shield (Assamese rapper, Jorhat). Copy voice stays: "Bars from the hills. Threads for the street."
+- Previous-work audit (v1 of this site): centered logo + wordmark split hero, 3-column card grid with corner marks, soft 8-14px radii, two marquees, eyebrow above every section, Syne/Cinzel fonts never used consistently.
+- Shell-ban list for this revision:
+  - BANNED: 3/4-column product grids, pill buttons, star ratings, discount banners, card-in-card
+  - BANNED: rounded corners anywhere (shape lock = 0px)
+  - BANNED: marquees (removed completely)
+  - BANNED: scroll cues, em-dashes in UI copy, decorative status dots
+  - BANNED: window scroll listeners (motion values / IntersectionObserver only)
+- Primary composition family: mobile = full-bleed 100svh vertical reel; desktop = pinned horizontal film strip.
+- Palette tokens: Void #030305, Bone #f3efe8, Ember #ff441f, Ash #8a8580 (cold start), Molten Gold #f2a541 (prices and edition numbers only).
+- Type: nistha (display), Space Mono (labels, codes, prices), Plus Jakarta Sans (body). Syne and Cinzel dropped.
+- Skills applied: cinematic-ui (phases, anti-garbage, premium calibration), design-taste-frontend (pre-flight bans), gravitas (evidence-backed verification), motion-framer (layoutId, drag, scroll hooks).
+- Vault lessons applied (my brain / Problems solved): never put overflow-x-hidden on a wrapper (breaks sticky and useScroll), use overflow-x: clip on html/body; keep parallax ranges percentage-based and small; pointer-events-none on swipeable images.

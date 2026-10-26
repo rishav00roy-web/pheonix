@@ -1,24 +1,19 @@
-# Compiled Spec
+# Compiled Spec: Ash to Flame
 
-## Mobile-First Architecture
-- Container: Full-height viewport stack with `h-svh snap-y snap-mandatory overflow-y-auto`
-- Section items: `h-svh snap-start snap-always relative flex flex-col justify-between p-6 sm:p-12 overflow-hidden`
-- View Modes:
-  - `REEL`: The 100svh cinematic scene stream
-  - `INDEX`: The brutalist archival registry
-- HUD Overlays:
-  - Top: Fixed hairline header with `PHEONIX` and view toggles
-  - Bottom: Floating thumb-level action deck (`[01/06]`, `INSPECT DOSSIER`, `ACQUIRE $1,480`)
+## Tokens
+- Colors (tailwind): void #030305, bone-100 #f3efe8, ember-500 #ff441f, ash #8a8580, gold #f2a541.
+- Radius: every borderRadius key = 0.
+- Fonts: font-nistha, font-mono (Space Mono), font-sans (Plus Jakarta Sans).
 
-## Typography & Color Tokens
-- Font: `Syne` (display titles), `Cinzel` (poetic subtitles), `Space Mono` (technical coordinates)
-- Palette:
-  - `--void`: `#020204`
-  - `--bone`: `#f3efe8`
-  - `--ember`: `#ff3e1f`
-  - `--zinc-hud`: `#71717a`
+## Motion
+- Lenis (src/lib/smoothScroll.ts): lerp 0.09, smoothWheel, syncTouch false; null under reduced motion.
+- All scroll motion = motion values (useScroll / useTransform / useSpring). No state per frame.
+- Sparks: one fixed canvas (src/lib/sparks.ts), rAF loop only while particles exist or emission > 0, paused when the tab is hidden.
+- Reduced motion: no Lenis, no intro, no parallax / scatter, no snap, runway falls back to the vertical reel.
 
-## Entrance & Motion
-- Mobile swipe/scroll: CSS scroll snapping (`scroll-snap-type: y mandatory`) for smooth, film-strip-like frame progression.
-- Interactive Monster Maw:
-  - Touch-responsive jaw rotation (`rotate(-24deg)` and `rotate(30deg)`) with Web Audio API mechanical transient snap.
+## Layout
+- Hero: min-height 100svh, wordmark letters are spans with background-clip:text, background offsets measured on resize (not on scroll).
+- Reel: panels h-[100svh], html.reel-snap { scroll-snap-type: y proximity } on mobile only.
+- Runway: section height = N * 70vh, sticky inner h-[100svh], track x from section progress, per-item scale/opacity from distance to the active index.
+- Dossier: AnimatePresence, layoutId `frame-${id}`, drag="y" via drag controls on the handle/image.
+- Thumb bar + floating WhatsApp: fixed bottom with safe-area insets; WhatsApp hides while the thumb bar shows.

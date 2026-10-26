@@ -1,104 +1,53 @@
 /** @type {import('tailwindcss').Config} */
+// Every colour and font resolves to the tokens declared at :root in src/index.css
+const token = (name) => `rgb(var(--${name}-rgb) / <alpha-value>)`;
+
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
-    // ── Border radius: swap hard-edged defaults for soft values ────────────
+    // ── Shape lock: square corners; only dots and rings are round ─────────
     borderRadius: {
       'none': '0',
-      'sm':   '6px',
-      DEFAULT:'8px',
-      'md':   '10px',
-      'lg':   '14px',
-      'xl':   '18px',
-      '2xl':  '24px',
-      '3xl':  '32px',
+      'sm':   '0',
+      DEFAULT:'0',
+      'md':   '0',
+      'lg':   '0',
+      'xl':   '0',
+      '2xl':  '0',
+      '3xl':  '0',
       'full': '9999px',
+      // The specimen card keeps the original site's soft corner
+      'card': '12px',
     },
     extend: {
       fontFamily: {
-        nistha: ['nistha', 'Syne', 'sans-serif'],
-        syne:   ['Syne', 'sans-serif'],
-        cinzel: ['Cinzel', 'serif'],
-        sans:   ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-        mono:   ['"Space Mono"', 'monospace'],
-      },
-      // ── Font-size scale (LearnUI guidelines, 90% Chrome zoom compensated) ─
-      fontSize: {
-        // Micro labels / edition chips
-        'micro':  ['12px', { lineHeight: '1.4' }],
-        // Secondary / mono coords / captions (2px below body)
-        'secondary': ['14px', { lineHeight: '1.5' }],
-        // UI interactive (buttons, nav, filters)
-        'ui':     ['16px', { lineHeight: '1.5' }],
-        // Body default
-        'body':   ['18px', { lineHeight: '1.65' }],
-        // Small subhead
-        'sub':    ['20px', { lineHeight: '1.4' }],
-        // Section heading (desktop) — stays within the 35-50px article guide
-        'heading':['36px', { lineHeight: '1.1' }],
-        'heading-lg':['44px', { lineHeight: '1.05' }],
+        serif: ['var(--font-serif)'],
+        sans:  ['var(--font-body)'],
+        mono:  ['var(--font-mono)'],
       },
       colors: {
-        void: '#030305',
+        void: token('void'),
         obsidian: {
-          950: '#060609',
-          900: '#0b0c10',
-          800: '#14161f',
-          700: '#1d212f',
-          600: '#2b3044',
-        },
-        ember: {
-          400: '#ff7849',
-          500: '#ff441f',
-          600: '#e62e0b',
-          glow: 'rgba(255, 68, 31, 0.45)',
+          950: token('obsidian-950'),
+          900: token('obsidian-900'),
+          800: token('obsidian-800'),
+          700: token('obsidian-700'),
         },
         bone: {
-          50:  '#faf8f5',
-          100: '#f3efe8',
-          200: '#e5ded1',
-          300: '#cfc4b1',
+          100: token('bone-100'),
+          300: token('bone-300'),
+        },
+        ember: {
+          400: token('ember-400'),
+          500: token('ember-500'),
         },
         chrome: {
-          100: '#f8fafc',
-          200: '#e2e8f0',
-          400: '#94a3b8',
-          600: '#475569',
-        }
+          400: token('chrome-400'),
+        },
       },
-      keyframes: {
-        mawChomp: {
-          '0%, 100%': { transform: 'rotate(0deg)' },
-          '50%':      { transform: 'rotate(-18deg)' },
-        },
-        jawDrop: {
-          '0%, 100%': { transform: 'rotate(0deg)' },
-          '50%':      { transform: 'rotate(22deg)' },
-        },
-        shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-        pulseGlow: {
-          '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
-          '50%':      { opacity: '0.8', transform: 'scale(1.05)' },
-        },
-        marquee: {
-          '0%':   { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-50%)' },
-        }
-      },
-      animation: {
-        'maw-chomp':  'mawChomp 2.4s ease-in-out infinite',
-        'jaw-drop':   'jawDrop 2.4s ease-in-out infinite',
-        'shimmer':    'shimmer 3s ease-in-out infinite',
-        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
-        'marquee':    'marquee 28s linear infinite',
-      }
     },
   },
   plugins: [],
