@@ -122,6 +122,9 @@ const Drawer: React.FC<{ open: boolean; onClosed: () => void }> = ({ open, onClo
                 <WhatsAppIcon />
                 Order on WhatsApp
               </a>
+              {!sent && (
+                <p className="text-[15px] text-chrome-400">WhatsApp opens with your order already written out. Shipping and payment are agreed there before you pay.</p>
+              )}
 
               {sent && (
                 <div className="flex items-center justify-between gap-3">
@@ -150,7 +153,9 @@ const BagRow: React.FC<{ line: BagLine }> = ({ line: m }) => {
   const step = (d: number) => setQuantity(m.product.id, m.size, m.color, m.quantity + d);
   return (
     <li className="py-5 flex gap-4">
-      <img src={smallShot(m.product.gallery[0])} alt="" className="w-20 aspect-[4/5] object-cover shrink-0 bg-obsidian-900" />
+      <span className="paper w-20 aspect-[4/5] shrink-0 overflow-hidden">
+        <img src={smallShot(m.product.gallery[0])} alt="" className="w-full h-full object-cover" />
+      </span>
       <div className="flex-1 min-w-0">
         <p className="text-[16px] leading-tight">{m.product.name}</p>
         <p className="mt-1 text-[15px] text-chrome-400">

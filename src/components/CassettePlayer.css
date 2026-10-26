@@ -1,0 +1,648 @@
+/* Hallmark · checked: 2026-10-26 · genre: editorial · a portable tape deck in CSS 3D after Rishav's ask for a "real cassette player": graphite body, brushed silver keys, ember play key, the bone-label cassette behind smoked glass */
+/* Every colour comes from the house tokens. The deck is drawn at a fixed size
+   (600 by 540, the body 520 by 400 by 56 deep) and scaled to its column by --k. */
+
+.deck-wrap {
+  width: 100%;
+  max-width: 600px;
+}
+
+.deck-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 600 / 540;
+}
+
+.deck-scale {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 540px;
+  transform-origin: 0 0;
+  transform: scale(var(--k, 1));
+  perspective: 1800px;
+  perspective-origin: 50% 45%;
+}
+
+/* A pool of light on the floor and the deck's shadow in it */
+.deck-floor {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 440px;
+  height: 100px;
+  background: radial-gradient(50% 50% at 50% 50%, rgb(var(--obsidian-700-rgb) / 0.55), transparent);
+  pointer-events: none;
+}
+.deck-floor::after {
+  content: '';
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 22%;
+  height: 46%;
+  background: radial-gradient(closest-side, var(--void), transparent);
+}
+
+/* The body: a box 520 wide, 400 high and 56 deep, turned by --rx and --ry */
+.deck-body {
+  position: absolute;
+  top: 96px;
+  left: 40px;
+  width: 520px;
+  height: 400px;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, -12deg)) rotateY(var(--ry, -18deg));
+}
+
+.deck-face {
+  position: absolute;
+  pointer-events: none;
+}
+.deck-back {
+  inset: 0;
+  background: rgb(var(--obsidian-950-rgb));
+  transform: rotateY(180deg) translateZ(28px);
+}
+.deck-top,
+.deck-bottom {
+  top: 172px;
+  left: 0;
+  width: 520px;
+  height: 56px;
+}
+/* Lit from above: the top is the brightest side, its front edge catching the light */
+.deck-top {
+  background:
+    repeating-linear-gradient(90deg, rgb(var(--bone-50-rgb) / 0.03) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgb(var(--obsidian-800-rgb)), rgb(var(--obsidian-700-rgb)));
+  box-shadow: inset 0 -1px 0 rgb(var(--bone-50-rgb) / 0.28);
+  transform: rotateX(90deg) translateZ(200px);
+}
+.deck-bottom {
+  background: var(--void);
+  transform: rotateX(-90deg) translateZ(200px);
+}
+.deck-left,
+.deck-right {
+  top: 0;
+  left: 232px;
+  width: 56px;
+  height: 400px;
+}
+.deck-right {
+  background: linear-gradient(90deg, rgb(var(--obsidian-800-rgb)), rgb(var(--obsidian-950-rgb)));
+  box-shadow: inset 1px 0 0 rgb(var(--bone-50-rgb) / 0.16);
+  transform: rotateY(90deg) translateZ(260px);
+}
+.deck-left {
+  background: linear-gradient(270deg, rgb(var(--obsidian-800-rgb)), rgb(var(--obsidian-950-rgb)));
+  box-shadow: inset -1px 0 0 rgb(var(--bone-50-rgb) / 0.12);
+  transform: rotateY(-90deg) translateZ(260px);
+}
+
+/* The volume wheel's knurled edge on the right side, the headphone jack on the left */
+.deck-wheel {
+  position: absolute;
+  top: 56px;
+  left: 12px;
+  width: 32px;
+  height: 112px;
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, rgb(var(--void-rgb) / 0.7), transparent 35% 65%, rgb(var(--void-rgb) / 0.7)),
+    repeating-linear-gradient(180deg, rgb(var(--chrome-400-rgb)) 0 2px, rgb(var(--obsidian-900-rgb)) 2px 5px);
+  box-shadow: 0 0 0 2px var(--void);
+}
+.deck-jack {
+  position: absolute;
+  top: 64px;
+  left: 21px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--void);
+  box-shadow: 0 0 0 3px rgb(var(--chrome-600-rgb)), 0 0 0 4px var(--void);
+}
+
+/* The front: the plate cut around the window, set 28px out from the middle */
+.deck-front {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(28px);
+}
+
+/* The well behind the glass, 16px deep, with the cassette sitting in it */
+.deck-well {
+  position: absolute;
+  top: 44px;
+  left: 28px;
+  width: 464px;
+  height: 288px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: radial-gradient(80% 70% at 50% 40%, rgb(var(--obsidian-900-rgb)), var(--void));
+  transform: translateZ(-16px);
+}
+.deck-well::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 12px 24px rgb(var(--void-rgb) / 0.85), inset 0 0 0 1px var(--void);
+  pointer-events: none;
+}
+
+.deck-wall {
+  position: absolute;
+  pointer-events: none;
+}
+.deck-wall-top,
+.deck-wall-bottom {
+  left: 28px;
+  width: 464px;
+  height: 16px;
+  transform-origin: top;
+  transform: rotateX(-90deg);
+}
+.deck-wall-top { top: 44px; background: var(--void); }
+.deck-wall-bottom { top: 332px; background: linear-gradient(180deg, rgb(var(--obsidian-700-rgb)), rgb(var(--obsidian-900-rgb))); }
+.deck-wall-left,
+.deck-wall-right {
+  top: 44px;
+  width: 16px;
+  height: 288px;
+  transform-origin: left;
+  transform: rotateY(90deg);
+}
+.deck-wall-left { left: 28px; background: linear-gradient(90deg, rgb(var(--obsidian-800-rgb)), rgb(var(--obsidian-950-rgb))); }
+.deck-wall-right { left: 492px; background: var(--void); }
+
+/* Smoked glass: a faint tint, a soft top light, and a glare that slides as the deck turns */
+.deck-glass {
+  position: absolute;
+  top: 44px;
+  left: 28px;
+  width: 464px;
+  height: 288px;
+  border-radius: 8px;
+  background:
+    linear-gradient(112deg, transparent 0 36%, rgb(var(--bone-50-rgb) / 0.13) 42%, rgb(var(--bone-50-rgb) / 0.04) 47%, transparent 52% 60%, rgb(var(--bone-50-rgb) / 0.06) 63%, transparent 67%) calc(50% + var(--glare, 0%)) 0 / 220% 100% no-repeat,
+    linear-gradient(180deg, rgb(var(--bone-50-rgb) / 0.06), transparent 40%),
+    rgb(var(--void-rgb) / 0.2);
+  box-shadow: inset 0 0 0 1px rgb(var(--bone-50-rgb) / 0.06);
+  pointer-events: none;
+  transform: translateZ(-1px);
+}
+
+/* The plate, brushed, with bevelled edges; the window is cut out of it */
+.deck-plate {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgb(var(--bone-50-rgb) / 0.022) 0 1px, transparent 1px 3px),
+    radial-gradient(60% 50% at calc(30% - var(--glare, 0%)) 0%, rgb(var(--bone-50-rgb) / 0.07), transparent),
+    radial-gradient(120% 90% at 30% 0%, rgb(var(--obsidian-700-rgb)), rgb(var(--obsidian-800-rgb)) 45%, rgb(var(--obsidian-900-rgb)));
+  box-shadow:
+    inset 0 1px 0 rgb(var(--bone-50-rgb) / 0.22),
+    inset 0 -2px 0 rgb(var(--void-rgb) / 0.55),
+    inset 1px 0 0 rgb(var(--bone-50-rgb) / 0.08),
+    inset -1px 0 0 rgb(var(--void-rgb) / 0.5);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='400'%3E%3Cpath fill-rule='evenodd' d='M0 0H520V400H0Z M36 44H484A8 8 0 0 1 492 52V324A8 8 0 0 1 484 332H36A8 8 0 0 1 28 324V52A8 8 0 0 1 36 44Z'/%3E%3C/svg%3E");
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='400'%3E%3Cpath fill-rule='evenodd' d='M0 0H520V400H0Z M36 44H484A8 8 0 0 1 492 52V324A8 8 0 0 1 484 332H36A8 8 0 0 1 28 324V52A8 8 0 0 1 36 44Z'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.deck-bezel {
+  position: absolute;
+  top: 41px;
+  left: 25px;
+  width: 470px;
+  height: 294px;
+  border: 1px solid rgb(var(--chrome-400-rgb) / 0.3);
+  border-radius: 11px;
+  box-shadow: 0 1px 0 rgb(var(--bone-50-rgb) / 0.08), inset 0 0 0 2px rgb(var(--void-rgb) / 0.7);
+  pointer-events: none;
+  transform: translateZ(0.5px);
+}
+
+/* Screws: a dark cross on a grey head */
+.deck-screw,
+.tape-screw {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, transparent 42%, var(--void) 42% 58%, transparent 58%),
+    linear-gradient(-45deg, transparent 42%, var(--void) 42% 58%, transparent 58%),
+    radial-gradient(circle at 35% 30%, rgb(var(--chrome-400-rgb)), rgb(var(--obsidian-700-rgb)));
+  box-shadow: 0 1px 0 rgb(var(--bone-50-rgb) / 0.08);
+}
+.deck-screw { transform: translateZ(0.5px); }
+.deck-screw-0 { top: 12px; left: 12px; }
+.deck-screw-1 { top: 12px; right: 12px; }
+.deck-screw-2 { bottom: 12px; left: 12px; }
+.deck-screw-3 { bottom: 12px; right: 12px; }
+
+/* The name pressed into the plate, and the run light */
+.deck-topbar {
+  position: absolute;
+  top: 0;
+  left: 36px;
+  right: 36px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateZ(1px);
+}
+.deck-mark {
+  font-size: 17px;
+  color: rgb(var(--bone-100-rgb) / 0.62);
+  text-shadow: 0 -1px 0 var(--void);
+}
+.deck-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--obsidian-700-rgb));
+  box-shadow: inset 0 1px 1px var(--void);
+  transition: background-color 300ms ease, box-shadow 300ms ease;
+}
+.deck-stage.is-playing .deck-led {
+  background: var(--ember);
+  box-shadow: 0 0 6px 2px rgb(var(--ember-500-rgb) / 0.55);
+}
+
+/* The strip under the window: tape counter, seek groove, length */
+.deck-strip {
+  position: absolute;
+  top: 332px;
+  left: 28px;
+  right: 28px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transform: translateZ(1px);
+}
+.deck-counter {
+  min-width: 68px;
+  padding: 8px 12px;
+  border-radius: 3px;
+  background: var(--void);
+  box-shadow: inset 0 1px 3px var(--void), 0 1px 0 rgb(var(--bone-50-rgb) / 0.08);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  text-align: center;
+  color: rgb(var(--bone-100-rgb));
+}
+.deck-total {
+  min-width: 44px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: right;
+  color: rgb(var(--chrome-400-rgb));
+}
+
+/* The seek groove: cut into the plate, ember up to the playhead, a silver knob.
+   Its hit area is the strip's full height. */
+.deck-seek {
+  flex: 1;
+  min-width: 0;
+  height: 68px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.deck-seek:disabled { cursor: default; }
+.deck-seek::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--ember) var(--progress, 0%), var(--void) var(--progress, 0%));
+  box-shadow: inset 0 1px 2px var(--void), 0 1px 0 rgb(var(--bone-50-rgb) / 0.1);
+}
+.deck-seek::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgb(var(--bone-50-rgb)), rgb(var(--chrome-400-rgb)) 55%, rgb(var(--chrome-600-rgb)));
+  box-shadow: 0 2px 4px rgb(var(--void-rgb) / 0.8);
+  appearance: none;
+  -webkit-appearance: none;
+}
+.deck-seek::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--void);
+  box-shadow: inset 0 1px 2px var(--void), 0 1px 0 rgb(var(--bone-50-rgb) / 0.1);
+}
+.deck-seek::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--ember); }
+.deck-seek::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgb(var(--bone-50-rgb)), rgb(var(--chrome-400-rgb)) 55%, rgb(var(--chrome-600-rgb)));
+  box-shadow: 0 2px 4px rgb(var(--void-rgb) / 0.8);
+}
+.deck-seek:focus-visible { outline-offset: -8px; }
+
+/* The piano keys stand on the top edge, their faces 10px behind the front.
+   A press sinks a key into the body; play, mute and captions stay down while on. */
+.deck-keys {
+  position: absolute;
+  right: 36px;
+  bottom: 100%;
+  height: 34px;
+  display: flex;
+  gap: 8px;
+  transform-style: preserve-3d;
+  transform: translateZ(18px);
+}
+/* The slot the keys sink into, laid flat on the top a hair above it */
+.deck-keys::before {
+  content: '';
+  position: absolute;
+  top: calc(100% - 0.5px);
+  left: -4px;
+  right: -4px;
+  height: 44px;
+  background: var(--void);
+  transform-origin: top;
+  transform: translateZ(4px) rotateX(-90deg);
+}
+
+.deck-key {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 72px;
+  height: 34px;
+  padding-top: 8px;
+  border-radius: 2px 2px 0 0;
+  background:
+    repeating-linear-gradient(90deg, rgb(var(--bone-50-rgb) / 0.08) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgb(var(--chrome-200-rgb)), rgb(var(--chrome-400-rgb)));
+  box-shadow: inset 0 1px 0 rgb(var(--bone-50-rgb) / 0.7), inset 0 -1px 0 rgb(var(--void-rgb) / 0.3);
+  color: rgb(var(--obsidian-900-rgb));
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 140ms var(--ease-quiet);
+}
+/* A taller target than the face shows, for thumbs */
+.deck-key::before {
+  content: '';
+  position: absolute;
+  inset: -36px -4px -14px;
+}
+/* Hover lifts the metal a shade */
+.deck-key::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgb(var(--bone-50-rgb) / 0.22);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+.deck-key:hover::after { opacity: 1; }
+.deck-key.is-latched { transform: translateY(9px); }
+.deck-key:active { transform: translateY(16px); }
+.deck-key:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
+.deck-key-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  background: linear-gradient(180deg, rgb(var(--bone-50-rgb)), rgb(var(--chrome-200-rgb)));
+  transform-origin: top;
+  transform: rotateX(-90deg);
+}
+.deck-key-side {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 36px;
+  height: 100%;
+  background: rgb(var(--chrome-600-rgb));
+  transform-origin: left;
+  transform: rotateY(90deg);
+}
+.deck-key-icon {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 1px 0 rgb(var(--bone-50-rgb) / 0.55));
+}
+
+.deck-key-play {
+  background:
+    repeating-linear-gradient(90deg, rgb(var(--bone-50-rgb) / 0.06) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgb(var(--ember-400-rgb)), var(--ember));
+  box-shadow: inset 0 1px 0 rgb(var(--bone-50-rgb) / 0.45), inset 0 -1px 0 rgb(var(--void-rgb) / 0.3);
+  color: var(--void);
+}
+.deck-key-play .deck-key-top { background: rgb(var(--ember-400-rgb)); }
+.deck-key-play .deck-key-side { background: linear-gradient(rgb(var(--void-rgb) / 0.4), rgb(var(--void-rgb) / 0.4)), var(--ember); }
+.deck-key-play .deck-key-icon { filter: drop-shadow(0 1px 0 rgb(var(--bone-50-rgb) / 0.3)); }
+.deck-key-play:focus-visible { outline-color: rgb(var(--bone-100-rgb)); }
+
+/* The cassette: a dark shell 432 by 272, its paper label, the reels seen
+   through the label's cut, and the ridge along the bottom edge */
+.tape {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  width: 432px;
+  height: 272px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgb(var(--obsidian-700-rgb)), rgb(var(--obsidian-800-rgb)) 60%, rgb(var(--obsidian-900-rgb)));
+  box-shadow: inset 0 1px 0 rgb(var(--bone-50-rgb) / 0.14), inset 0 -1px 0 rgb(var(--void-rgb) / 0.6), 0 6px 14px rgb(var(--void-rgb) / 0.7);
+}
+.tape-screw-0 { top: 7px; left: 7px; }
+.tape-screw-1 { top: 7px; right: 7px; }
+.tape-screw-2 { bottom: 7px; left: 7px; }
+.tape-screw-3 { bottom: 7px; right: 7px; }
+
+.tape-label {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  right: 20px;
+  height: 178px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgb(var(--bone-50-rgb)), rgb(var(--bone-100-rgb)));
+  color: var(--void);
+}
+.tape-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 16px 0;
+}
+.tape-art {
+  display: block;
+  width: 76px;
+  height: 38px;
+  object-fit: cover;
+  border: 1px solid rgb(var(--void-rgb) / 0.16);
+}
+.tape-artist,
+.tape-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.tape-artist { color: rgb(var(--chrome-600-rgb)); }
+.tape-title {
+  margin-top: 2px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tape-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.tape-side {
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: var(--void);
+  color: rgb(var(--bone-100-rgb));
+  white-space: nowrap;
+}
+.tape-length { color: rgb(var(--chrome-600-rgb)); letter-spacing: 0.08em; }
+
+/* The ember stripes run edge to edge behind the cut */
+.tape-band {
+  position: relative;
+  height: 80px;
+  margin-top: 16px;
+  background:
+    linear-gradient(rgb(var(--ember-400-rgb)) 0 0) 0 calc(50% - 16px) / 100% 8px no-repeat,
+    linear-gradient(var(--ember) 0 0) 0 50% / 100% 8px no-repeat,
+    linear-gradient(rgb(var(--obsidian-700-rgb)) 0 0) 0 calc(50% + 16px) / 100% 8px no-repeat;
+}
+.tape-cut {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: calc(50% - 150px);
+  width: 300px;
+  overflow: hidden;
+  border-radius: 9999px;
+  outline: 4px solid rgb(var(--bone-100-rgb));
+  background: rgb(var(--obsidian-950-rgb));
+  box-shadow: inset 0 2px 6px rgb(var(--void-rgb) / 0.9);
+}
+/* The tape wound on each reel: one pack shrinks as the other grows */
+.tape-pack {
+  position: absolute;
+  top: 50%;
+  width: calc(40px + 96px * var(--pack, 0));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgb(var(--bone-50-rgb) / 0.08), transparent 60%),
+    repeating-radial-gradient(circle, rgb(var(--obsidian-700-rgb)) 0 1px, rgb(var(--obsidian-900-rgb)) 1px 3px);
+  box-shadow: 0 0 0 1px rgb(var(--void-rgb) / 0.6);
+  transform: translate(-50%, -50%);
+}
+.tape-pack-l { left: 58px; }
+.tape-pack-r { left: 242px; }
+
+/* The reel hubs: a bone disc, a dark spindle hole with six teeth biting in */
+.tape-hub {
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: rgb(var(--bone-100-rgb));
+  box-shadow: 0 0 0 2px rgb(var(--void-rgb) / 0.5);
+}
+.tape-hub::before {
+  content: '';
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  background: var(--void);
+}
+.tape-hub::after {
+  content: '';
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgb(var(--bone-100-rgb)) 0deg 14deg, transparent 14deg 60deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 46%, var(--void) 48%);
+          mask: radial-gradient(circle, transparent 0 46%, var(--void) 48%);
+}
+.tape-hub-l { left: 58px; }
+.tape-hub-r { left: 242px; }
+
+.tape-ridge {
+  position: absolute;
+  bottom: 0;
+  left: 92px;
+  right: 92px;
+  height: 62px;
+  clip-path: polygon(7% 0, 93% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, rgb(var(--obsidian-700-rgb)), rgb(var(--obsidian-800-rgb)));
+}
+.tape-hole {
+  position: absolute;
+  top: 28px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--void);
+  box-shadow: 0 1px 0 rgb(var(--bone-50-rgb) / 0.1);
+}
+.tape-hole-l { left: 18%; }
+.tape-hole-r { right: 18%; }
+.tape-gate {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 64px;
+  height: 16px;
+  margin-left: -32px;
+  border-radius: 2px;
+  background: var(--void);
+}
+
+/* Under the deck */
+.deck-cue,
+.deck-note {
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+  color: rgb(var(--chrome-400-rgb));
+}
+.deck-cue { min-height: 1.5em; color: rgb(var(--bone-100-rgb)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-key,
+  .deck-key::after,
+  .deck-led { transition: none; }
+}

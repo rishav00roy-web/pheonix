@@ -1,27 +1,5 @@
 /* Hallmark · checked: 2026-10-26 · genre: editorial · kept on purpose: 63, the founder line 'Founder · Rapper · Artist · Model' is the brief's own wording; focus, active and disabled states come from index.css */
-/* AJ Shield: the ember hairline and diamond from the Home hero, the letter
-   clips for her name, the placeholder style, and the cassette's reels. */
-.aj-rule {
-  position: relative;
-  height: 1px;
-  width: 100%;
-  max-width: 420px;
-  background: linear-gradient(90deg, var(--ember), rgb(var(--ember-500-rgb) / 0.15));
-  transform-origin: left;
-}
-.aj-diamond {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 16px;
-  height: 16px;
-  margin-top: -8px;
-  font-size: 14px;
-  line-height: 16px;
-  text-align: center;
-  color: var(--ember);
-}
-
+/* AJ Shield: the letter clips for her name, and the placeholder style. */
 .aj-name-clip { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin-bottom: -0.1em; }
 .aj-name-letter { display: inline-block; will-change: transform; }
 
@@ -31,18 +9,4 @@
   padding: 16px 20px;
   color: rgb(var(--chrome-400-rgb));
   font-size: 17px;
-}
-
-.aj-reel {
-  width: 56px;
-  height: 56px;
-  border-radius: 9999px;
-  border: 1px solid rgb(var(--bone-100-rgb) / 0.4);
-  box-shadow: inset 0 0 0 12px rgb(var(--obsidian-800-rgb)), inset 0 0 0 13px rgb(var(--bone-100-rgb) / 0.25);
-}
-.aj-window {
-  width: 72px;
-  height: 24px;
-  border: 1px solid var(--line);
-  background: rgb(var(--ember-500-rgb) / 0.12);
 }

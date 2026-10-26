@@ -5,12 +5,15 @@ import { gsap, MOTION_OK, useGSAP } from '../lib/smoothScroll';
 import { entranceDelay } from '../lib/pageTransition';
 import { SplitText } from '../components/SplitText';
 import { PlateViewer } from '../components/PlateViewer';
+import { CassettePlayer } from '../components/CassettePlayer';
+import { Crops, Rule } from '../components/Editorial';
 import { ArrowUpRightIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../components/icons';
 import { SOCIAL } from '../data/brand';
 import {
   FOLLOW,
   PLATES,
   PORTRAIT,
+  TRACK,
   YOUTUBE_URL,
   formatPostDate,
   pad2,
@@ -58,7 +61,7 @@ export const AjShield: React.FC = () => {
         // The portrait wipes open, the name rises letter by letter, the rule draws
         gsap.fromTo('[data-portrait]', { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.6, ease: 'power4.inOut', delay });
         gsap.from('.aj-name-letter', { yPercent: 115, duration: 1.1, ease: 'power4.out', stagger: 0.05, delay: delay + 0.35 });
-        gsap.from('.aj-rule', { scaleX: 0, duration: 1.2, ease: 'power3.inOut', delay: delay + 0.6 });
+        gsap.from('.rule', { scaleX: 0, duration: 1.2, ease: 'power3.inOut', delay: delay + 0.6 });
         gsap.from('[data-intro]', { y: 16, opacity: 0, duration: 1, ease: 'power3.out', stagger: 0.08, delay: delay + 0.8 });
 
         // Plates open like a curtain as they arrive and drift gently inside their frames
@@ -92,23 +95,6 @@ export const AjShield: React.FC = () => {
     </div>
   );
 };
-
-/** Corner crop marks from the specimen card */
-const Crops: React.FC = () => (
-  <>
-    <span aria-hidden="true" className="crop crop-tl">┌</span>
-    <span aria-hidden="true" className="crop crop-tr">┐</span>
-    <span aria-hidden="true" className="crop crop-bl">└</span>
-    <span aria-hidden="true" className="crop crop-br">┘</span>
-  </>
-);
-
-/** The ember hairline with its diamond, after the Home hero */
-const Rule: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div aria-hidden="true" className={`aj-rule ${className}`}>
-    <span className="aj-diamond">◆</span>
-  </div>
-);
 
 function Opening() {
   return (
@@ -232,26 +218,25 @@ function Plate({ photo, no, onOpen, wide }: { photo: AjPhoto; no: number; onOpen
 function Music() {
   return (
     <section aria-labelledby="aj-music" className="frame py-16 lg:py-24 border-t border-obsidian-700">
-      <div data-fade className="aj-cassette relative mx-auto max-w-[720px] border border-bone-100/[0.14] bg-obsidian-950 p-5 sm:p-8">
-        <Crops />
-        <div className="flex items-center justify-between gap-4 border-b border-obsidian-700 pb-3">
-          <span className="mono-label text-chrome-400">Side A</span>
-          <span className="mono-label text-ember-400">Rap</span>
-        </div>
-        <h2 id="aj-music" className="headline mt-5 text-[clamp(36px,5vw,56px)]">
-          The music
-        </h2>
-        <div aria-hidden="true" className="mt-6 flex items-center justify-center gap-10 sm:gap-16 border border-obsidian-700 py-5">
-          <span className="aj-reel" />
-          <span className="aj-window" />
-          <span className="aj-reel" />
-        </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          <p className="text-chrome-400 max-w-[34ch]">AJ Shield raps. Her tracks live on her YouTube channel.</p>
-          <a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="btn btn-line">
+      <div className="grid-12 gap-y-10 items-center">
+        <div data-fade className="lg:col-span-5">
+          <div className="flex items-center justify-between gap-4 border-b border-obsidian-700 pb-3">
+            <span className="mono-label text-chrome-400">Listen</span>
+            <span className="mono-label text-ember-400">Rap</span>
+          </div>
+          <h2 id="aj-music" className="headline mt-5 text-[clamp(36px,5vw,56px)]">
+            The music
+          </h2>
+          <p className="mt-5 text-chrome-400 max-w-[36ch]">
+            Press play for {TRACK.title}. The video and the rest of her tracks are on her YouTube channel.
+          </p>
+          <a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="btn btn-line mt-8">
             <YouTubeIcon />
             Listen on YouTube
           </a>
+        </div>
+        <div data-fade className="lg:col-start-7 lg:col-span-6 flex justify-center">
+          <CassettePlayer audioSrc={TRACK.audio} trackTitle={TRACK.title} artist={NAME} artworkSrc={TRACK.art} />
         </div>
       </div>
     </section>
@@ -290,7 +275,7 @@ function Follow() {
                 decoding="async"
                 className="w-full h-full object-cover"
               />
-              <span className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-void/70 text-bone-100 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-void/70 text-bone-100 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity">
                 <ArrowUpRightIcon className="w-4 h-4" />
               </span>
             </a>

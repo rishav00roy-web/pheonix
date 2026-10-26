@@ -1,0 +1,386 @@
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { gsap, MOTION_OK, prefersReducedMotion, useGSAP } from '../lib/smoothScroll';
+import { CaptionsIcon, MuteIcon, PauseIcon, PlayIcon, RestartIcon, VolumeIcon } from './icons';
+import './CassettePlayer.css';
+
+export interface CaptionTrack {
+  readonly default?: boolean;
+  readonly label: string;
+  readonly src: string;
+  readonly srcLang: string;
+}
+
+interface CassettePlayerProps {
+  audioSrc: string;
+  trackTitle: string;
+  /** Printed above the title on the label */
+  artist?: string;
+  /** Cover art set into the label */
+  artworkSrc?: string;
+  /** Which side of the tape the label names */
+  side?: string;
+  /** WebVTT captions, printed under the deck while the tape plays */
+  captionTracks?: readonly CaptionTrack[];
+  className?: string;
+}
+
+/** "3:25" */
+const clock = (seconds: number) => {
+  const s = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+// How far the tape pack reaches on each reel: 0 is the bare hub, 1 a full reel.
+// Tape area follows the playhead, so the radius follows its square root.
+const packs = (progress: number) => [Math.sqrt(1 - progress), Math.sqrt(progress)] as const;
+
+/** Captions run hidden (we print the cue ourselves) or switch off entirely */
+const showCaptions = (track: TextTrack, on: boolean) => {
+  track.mode = on ? 'hidden' : 'disabled';
+};
+
+// The deck is drawn at this size and scaled to fit its column
+const STAGE_W = 600;
+
+// The resting pose: turned a little toward the copy on its left, seen from just above
+const POSE = { rx: -12, ry: -18 };
+
+interface DeckKeyProps {
+  label: string;
+  onClick: () => void;
+  /** For keys that switch something on: reported to screen readers */
+  pressed?: boolean;
+  /** Held down, as play is while the tape runs */
+  latched?: boolean;
+  play?: boolean;
+  children: React.ReactNode;
+}
+
+// A piano key: its face is the button, with a top and a side to give it body
+const DeckKey: React.FC<DeckKeyProps> = ({ label, onClick, pressed, latched, play, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={label}
+    aria-pressed={pressed}
+    className={`deck-key ${play ? 'deck-key-play' : ''} ${latched ? 'is-latched' : ''}`}
+  >
+    <span aria-hidden="true" className="deck-key-top" />
+    <span aria-hidden="true" className="deck-key-side" />
+    {children}
+  </button>
+);
+
+// A portable tape deck in 3D: a graphite body with depth, a recessed window
+// behind smoked glass with the cassette sitting inside it (paper label, reels
+// that turn while the tape runs, the smaller pack spinning faster as on a
+// real deck), piano keys on the top edge that sink when pressed and latch
+// while they hold, a tape counter and a seek groove on the front. The deck
+// leans toward the pointer and turns a little as the page scrolls past it.
+export const CassettePlayer: React.FC<CassettePlayerProps> = ({
+  audioSrc,
+  trackTitle,
+  artist,
+  artworkSrc,
+  side = 'A',
+  captionTracks,
+  className = '',
+}) => {
+  const stage = useRef<HTMLDivElement>(null);
+  const body = useRef<HTMLDivElement>(null);
+  const tape = useRef<HTMLDivElement>(null);
+  const audio = useRef<HTMLAudioElement>(null);
+  const hubs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [time, setTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [failed, setFailed] = useState(false);
+  const captionIndex = Math.max(0, captionTracks?.findIndex((t) => t.default) ?? 0);
+  const hasCaptions = !!captionTracks?.length;
+  const [captionsOn, setCaptionsOn] = useState(() => captionTracks?.some((t) => t.default) ?? false);
+  const [cue, setCue] = useState('');
+
+  const progress = duration > 0 ? Math.min(1, time / duration) : 0;
+  const [packL, packR] = packs(progress);
+
+  // The deck is built at a fixed size; scale it to the width it is given
+  useLayoutEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const fit = () => el.style.setProperty('--k', String(el.clientWidth / STAGE_W));
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // The deck leans toward the pointer and turns as the page scrolls past;
+  // the cassette drops into the well the first time the deck comes into view
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        const el = body.current;
+        const st = stage.current;
+        if (!el || !st) return;
+        const pose = { x: 0, y: 0, s: 0.5 };
+        const apply = () => {
+          const rx = POSE.rx + (pose.s - 0.5) * 10 - pose.y * 6;
+          const ry = POSE.ry + (pose.s - 0.5) * 14 + pose.x * 10;
+          el.style.setProperty('--rx', `${rx}deg`);
+          el.style.setProperty('--ry', `${ry}deg`);
+          // The glare on the glass slides as the deck turns
+          el.style.setProperty('--glare', `${(ry - POSE.ry) * 2.4}%`);
+        };
+        const toX = gsap.quickTo(pose, 'x', { duration: 0.9, ease: 'power3.out', onUpdate: apply });
+        const toY = gsap.quickTo(pose, 'y', { duration: 0.9, ease: 'power3.out', onUpdate: apply });
+        gsap.fromTo(pose, { s: 0 }, { s: 1, ease: 'none', onUpdate: apply, scrollTrigger: { trigger: st, start: 'top bottom', end: 'bottom top', scrub: 0.8 } });
+        gsap.from(tape.current, { yPercent: -112, duration: 1.2, ease: 'power3.inOut', scrollTrigger: { trigger: st, start: 'top 70%', once: true } });
+
+        const move = (e: PointerEvent) => {
+          if (e.pointerType !== 'mouse') return;
+          const r = st.getBoundingClientRect();
+          toX(((e.clientX - r.left) / r.width) * 2 - 1);
+          toY(((e.clientY - r.top) / r.height) * 2 - 1);
+        };
+        const leave = () => {
+          toX(0);
+          toY(0);
+        };
+        st.addEventListener('pointermove', move);
+        st.addEventListener('pointerleave', leave);
+        return () => {
+          st.removeEventListener('pointermove', move);
+          st.removeEventListener('pointerleave', leave);
+        };
+      });
+    },
+    { scope: stage }
+  );
+
+  // While the tape runs, follow the playhead every frame and turn the reels
+  useEffect(() => {
+    if (!playing) return;
+    let raf = 0;
+    let last = performance.now();
+    const angles = [0, 0];
+    const tick = (now: number) => {
+      const a = audio.current;
+      if (a) {
+        setTime(a.currentTime);
+        if (!prefersReducedMotion) {
+          const dt = Math.min(64, now - last);
+          const p = a.duration > 0 ? a.currentTime / a.duration : 0;
+          // Tape moves at a constant speed, so a reel turns faster the less tape it holds
+          packs(p).forEach((pack, i) => {
+            angles[i] = (angles[i] + (dt * 0.12) / (0.45 + pack)) % 360;
+            const hub = hubs.current[i];
+            if (hub) hub.style.transform = `rotate(${angles[i]}deg)`;
+          });
+        }
+      }
+      last = now;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing]);
+
+  // Captions: the chosen track runs hidden and its live cue is printed under the deck
+  useEffect(() => {
+    const track = audio.current?.textTracks[captionIndex];
+    if (!track || !hasCaptions) return;
+    showCaptions(track, captionsOn);
+    const onCue = () => {
+      const cues = track.activeCues;
+      setCue(cues && cues.length ? Array.from(cues, (c) => (c as VTTCue).text).join(' ') : '');
+    };
+    track.addEventListener('cuechange', onCue);
+    return () => track.removeEventListener('cuechange', onCue);
+  }, [captionIndex, captionsOn, hasCaptions]);
+
+  // The phone's lock screen and media keys show the track and its art
+  useEffect(() => {
+    if (!playing || !('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: trackTitle,
+      artist,
+      artwork: artworkSrc ? [{ src: artworkSrc }] : [],
+    });
+  }, [playing, trackTitle, artist, artworkSrc]);
+
+  const toggle = () => {
+    const a = audio.current;
+    if (!a) return;
+    if (a.paused) {
+      a.play().catch((e: DOMException) => {
+        if (e.name !== 'AbortError') setFailed(true);
+      });
+    } else {
+      a.pause();
+    }
+  };
+
+  const restart = () => {
+    const a = audio.current;
+    if (!a) return;
+    a.currentTime = 0;
+    setTime(0);
+  };
+
+  const toggleMute = () => {
+    if (audio.current) audio.current.muted = !audio.current.muted;
+  };
+
+  const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const a = audio.current;
+    if (!a) return;
+    a.currentTime = Number(e.target.value);
+    setTime(a.currentTime);
+  };
+
+  return (
+    <div className={`deck-wrap ${className}`}>
+      <div
+        ref={stage}
+        role="group"
+        aria-label={`Cassette player: ${trackTitle}${artist ? ` by ${artist}` : ''}`}
+        className={`deck-stage ${playing ? 'is-playing' : ''}`}
+      >
+        <div className="deck-scale">
+          <span aria-hidden="true" className="deck-floor" />
+
+          <div ref={body} className="deck-body">
+            {/* The five other sides of the box */}
+            <span aria-hidden="true" className="deck-face deck-back" />
+            <span aria-hidden="true" className="deck-face deck-bottom" />
+            <span aria-hidden="true" className="deck-face deck-left">
+              <span className="deck-jack" />
+            </span>
+            <span aria-hidden="true" className="deck-face deck-right">
+              <span className="deck-wheel" />
+            </span>
+            <span aria-hidden="true" className="deck-face deck-top">
+              <span className="deck-slot" />
+            </span>
+
+            {/* First in the source so focus reaches the keys before the seek groove below them */}
+            <div className="deck-keys">
+              <DeckKey label="Back to the start" onClick={restart}>
+                <RestartIcon className="deck-key-icon" />
+              </DeckKey>
+              <DeckKey label={playing ? 'Pause' : 'Play'} onClick={toggle} latched={playing} play>
+                {playing ? <PauseIcon className="deck-key-icon" /> : <PlayIcon className="deck-key-icon" />}
+              </DeckKey>
+              <DeckKey label="Mute" onClick={toggleMute} pressed={muted} latched={muted}>
+                {muted ? <MuteIcon className="deck-key-icon" /> : <VolumeIcon className="deck-key-icon" />}
+              </DeckKey>
+              {hasCaptions && (
+                <DeckKey label="Captions" onClick={() => setCaptionsOn((on) => !on)} pressed={captionsOn} latched={captionsOn}>
+                  <CaptionsIcon className="deck-key-icon" />
+                </DeckKey>
+              )}
+            </div>
+
+            <div className="deck-front">
+              {/* The well behind the glass, its four walls, and the cassette in it */}
+              <div aria-hidden="true" className="deck-well">
+                <div ref={tape} className="tape">
+                  {[0, 1, 2, 3].map((i) => (
+                    <span key={i} className={`tape-screw tape-screw-${i}`} />
+                  ))}
+                  <div className="tape-label">
+                    <div className="tape-head">
+                      {artworkSrc && <img className="tape-art" src={artworkSrc} width={538} height={272} alt="" loading="lazy" decoding="async" />}
+                      <div className="tape-titles">
+                        {artist && <p className="tape-artist">{artist}</p>}
+                        <p className="tape-title">{trackTitle}</p>
+                      </div>
+                      <div className="tape-meta">
+                        <span className="tape-side">Side {side}</span>
+                        <span className="tape-length num">{duration ? clock(duration) : '--:--'}</span>
+                      </div>
+                    </div>
+                    <div className="tape-band">
+                      <span className="tape-cut">
+                        <span className="tape-pack tape-pack-l" style={{ '--pack': packL } as React.CSSProperties} />
+                        <span className="tape-pack tape-pack-r" style={{ '--pack': packR } as React.CSSProperties} />
+                        <span className="tape-hub tape-hub-l" ref={(el) => { hubs.current[0] = el; }} />
+                        <span className="tape-hub tape-hub-r" ref={(el) => { hubs.current[1] = el; }} />
+                      </span>
+                    </div>
+                  </div>
+                  <span className="tape-ridge">
+                    <span className="tape-hole tape-hole-l" />
+                    <span className="tape-gate" />
+                    <span className="tape-hole tape-hole-r" />
+                  </span>
+                </div>
+              </div>
+              <span aria-hidden="true" className="deck-wall deck-wall-top" />
+              <span aria-hidden="true" className="deck-wall deck-wall-bottom" />
+              <span aria-hidden="true" className="deck-wall deck-wall-left" />
+              <span aria-hidden="true" className="deck-wall deck-wall-right" />
+              <span aria-hidden="true" className="deck-glass" />
+
+              {/* The front plate, cut around the window */}
+              <span aria-hidden="true" className="deck-plate" />
+              <span aria-hidden="true" className="deck-bezel" />
+              {[0, 1, 2, 3].map((i) => (
+                <span key={i} aria-hidden="true" className={`deck-screw deck-screw-${i}`} />
+              ))}
+
+              <div className="deck-topbar" aria-hidden="true">
+                <span className="deck-mark wordmark">Pheonix</span>
+                <span className="deck-led" />
+              </div>
+
+              <div className="deck-strip">
+                <span className="deck-counter num" aria-hidden="true">
+                  {clock(time)}
+                </span>
+                <input
+                  type="range"
+                  className="deck-seek"
+                  min={0}
+                  max={duration || 0}
+                  step={1}
+                  value={Math.min(time, duration || 0)}
+                  onChange={seek}
+                  disabled={!duration}
+                  aria-label="Seek"
+                  aria-valuetext={`${clock(time)} of ${clock(duration)}`}
+                  style={{ '--progress': `${progress * 100}%` } as React.CSSProperties}
+                />
+                <span className="deck-total num">{failed ? 'No track' : clock(duration)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <audio
+          ref={audio}
+          src={audioSrc}
+          preload="metadata"
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
+          onDurationChange={(e) => {
+            const d = e.currentTarget.duration;
+            if (Number.isFinite(d)) setDuration(d);
+          }}
+          onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+          onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
+          onError={() => setFailed(true)}
+        >
+          {captionTracks?.map((t) => (
+            <track key={t.src} kind="captions" label={t.label} src={t.src} srcLang={t.srcLang} default={t.default} />
+          ))}
+        </audio>
+      </div>
+      {failed && <p className="deck-note">The track couldn’t load. It’s on her YouTube channel.</p>}
+      {hasCaptions && captionsOn && <p className="deck-cue">{cue}</p>}
+    </div>
+  );
+};
