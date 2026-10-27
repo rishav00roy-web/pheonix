@@ -360,11 +360,6 @@
   @media (hover: hover) { .btn-line:hover { background: var(--text); border-color: var(--text); color: var(--void); } }
   .btn:disabled { cursor: default; }
 
-  /* The dock's trapezoid: slanted sides lean in at the top. The obsidian body
-     sits just inside the ember one, leaving a 1px ember edge along the top and slants. */
-  .dock-edge { clip-path: polygon(var(--dock-slant) 0, calc(100% - var(--dock-slant)) 0, 100% 100%, 0 100%); }
-  .dock-body { clip-path: polygon(calc(var(--dock-slant) + 0.85px) 0, calc(100% - var(--dock-slant) - 0.85px) 0, calc(100% - 1.2px) 100%, 1.2px 100%); }
-
   /* Icons: the hairline stays the same width at every size, so small and large icons match */
   .icon :is(path, rect, circle) { vector-effect: non-scaling-stroke; }
 
@@ -402,4 +397,13 @@ html.lenis, html.lenis body { height: auto; }
 
 @media (prefers-reduced-motion: reduce) {
   .btn, .text-link::after, .rail-tab, .rail-tab::after, .specimen-inspect, .specimen-acquire { transition: none; }
+}
+
+/* The top-right menu button: level with the masthead, clear of the notch */
+.menu-button {
+  top: calc(env(safe-area-inset-top, 0px) + (var(--mast-h) - 44px) / 2);
+  right: max(var(--gutter, 16px), env(safe-area-inset-right, 0px));
+}
+@media (min-width: 1024px) {
+  .menu-button { top: calc(env(safe-area-inset-top, 0px) + (var(--mast-h) - 48px) / 2); }
 }

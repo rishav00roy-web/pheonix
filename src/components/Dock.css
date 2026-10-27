@@ -1,0 +1,105 @@
+/* The dock as a piece of hardware: a graphite console on the bottom edge with
+   an ember top edge, a recessed tray, and keycaps standing up out of it.
+   Light comes from above: top faces catch it, the sides fall into shade.
+   A key sinks when pressed; the current page's key stays latched down,
+   with the ember diamond glowing in the tray beneath it. */
+
+.dock {
+  /* The console's shadow, cast up onto the page */
+  filter: drop-shadow(0 -8px 16px rgb(0 0 0 / 0.6));
+}
+
+/* The trapezoid: slanted sides lean in at the top. The graphite body sits
+   just inside the ember one, leaving a 1px ember edge along the top and slants. */
+.dock-edge { clip-path: polygon(var(--dock-slant) 0, calc(100% - var(--dock-slant)) 0, 100% 100%, 0 100%); }
+.dock-body {
+  clip-path: polygon(calc(var(--dock-slant) + 0.85px) 0, calc(100% - var(--dock-slant) - 0.85px) 0, calc(100% - 1.2px) 100%, 1.2px 100%);
+  background:
+    /* The top chamfer, warmed by the ember edge */
+    linear-gradient(180deg, rgb(var(--ember-500-rgb) / 0.22) 0, rgb(255 255 255 / 0.06) 2px, rgb(255 255 255 / 0.02) 6px, transparent 7px),
+    /* A faint brush across the metal */
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.014) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgb(var(--obsidian-800-rgb)) 0%, rgb(var(--obsidian-900-rgb)) 45%, rgb(var(--obsidian-950-rgb)) 100%);
+}
+
+/* The tray the keys stand in, sunk into the body */
+.dock-tray {
+  position: absolute;
+  top: 6px;
+  bottom: calc(var(--safe-b) + 2px);
+  left: calc(var(--dock-slant) + 2px);
+  right: calc(var(--dock-slant) + 2px);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgb(var(--void-rgb)) 0%, rgb(var(--obsidian-950-rgb)) 100%);
+  box-shadow:
+    inset 0 2px 5px rgb(0 0 0 / 0.85),
+    inset 0 -1px 0 rgb(255 255 255 / 0.06),
+    0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+/* A keycap: graphite top lit from above, a 4px side below it, and its shadow on the tray */
+.dock-key {
+  --side: 4px;
+  position: relative;
+  width: 42px;
+  height: 40px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(var(--chrome-400-rgb));
+  background: linear-gradient(180deg, rgb(var(--obsidian-700-rgb)) 0%, rgb(var(--obsidian-800-rgb)) 55%, rgb(var(--obsidian-900-rgb)) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    inset 0 -2px 3px rgb(0 0 0 / 0.35),
+    0 var(--side) 0 rgb(var(--obsidian-950-rgb)),
+    0 calc(var(--side) + 2px) 6px rgb(0 0 0 / 0.65);
+  transform: translateY(calc(4px - var(--side)));
+  transition: transform 110ms ease-out, box-shadow 110ms ease-out, color 300ms ease;
+}
+/* The tap area reaches 44x44 around the 42x40 cap */
+.dock-key::before { content: ''; position: absolute; inset: -2px -1px; }
+/* The glyph is printed into the cap */
+.dock-key .icon { filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.7)); }
+
+.dock-key:hover { color: rgb(var(--bone-100-rgb)); }
+@media (hover: hover) {
+  .dock-key:hover { --side: 5px; }
+}
+/* Pressed: the cap sinks until only a sliver of its side shows */
+.dock-key:active { --side: 1px; transition-duration: 60ms; }
+
+/* The current page: latched down, glyph lit */
+.dock-key[aria-current='page'] {
+  --side: 2px;
+  color: rgb(var(--bone-100-rgb));
+  background: linear-gradient(180deg, rgb(var(--obsidian-800-rgb)) 0%, rgb(var(--obsidian-900-rgb)) 100%);
+}
+.dock-key[aria-current='page'] .icon {
+  filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.7)) drop-shadow(0 0 6px rgb(var(--ember-500-rgb) / 0.45));
+}
+/* The bag with pieces in it reads lit, without latching */
+.dock-key.is-on { color: rgb(var(--bone-100-rgb)); }
+
+.dock-key:focus-visible { outline-offset: 3px; }
+
+/* The groove between the site's keys and the links that leave it */
+.dock-groove {
+  background: rgb(0 0 0 / 0.9);
+  box-shadow: 1px 0 0 rgb(255 255 255 / 0.07);
+}
+
+/* The current-page diamond, an ember light set in the tray */
+.dock-led {
+  background: rgb(var(--ember-500-rgb));
+  box-shadow: 0 0 6px 1px rgb(var(--ember-500-rgb) / 0.8), 0 0 14px 2px rgb(var(--ember-500-rgb) / 0.35);
+}
+
+/* The bag count, a small ember cap clipped onto the key */
+.dock-badge {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 2px 3px rgb(0 0 0 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-key { transition: color 300ms ease; }
+}

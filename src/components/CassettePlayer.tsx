@@ -19,6 +19,8 @@ interface CassettePlayerProps {
   artworkSrc?: string;
   /** Which side of the tape the label names */
   side?: string;
+  /** Where the tape is cued, in seconds: play, the back key and the end of the track all return here */
+  startAt?: number;
   /** WebVTT captions, printed under the deck while the tape plays */
   captionTracks?: readonly CaptionTrack[];
   className?: string;
@@ -83,6 +85,7 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
   artist,
   artworkSrc,
   side = 'A',
+  startAt = 0,
   captionTracks,
   className = '',
 }) => {
@@ -93,7 +96,7 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
   const hubs = useRef<(HTMLSpanElement | null)[]>([]);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(startAt);
   const [duration, setDuration] = useState(0);
   const [failed, setFailed] = useState(false);
   const captionIndex = Math.max(0, captionTracks?.findIndex((t) => t.default) ?? 0);
@@ -159,26 +162,25 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
     { scope: stage }
   );
 
-  // While the tape runs, follow the playhead every frame and turn the reels
+  // While the tape runs, turn the reels every frame. The counter, the packs and
+  // the groove follow timeupdate (about 4 a second), so the deck isn't re-rendered
+  // 60 times a second
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || prefersReducedMotion) return;
     let raf = 0;
     let last = performance.now();
     const angles = [0, 0];
     const tick = (now: number) => {
       const a = audio.current;
       if (a) {
-        setTime(a.currentTime);
-        if (!prefersReducedMotion) {
-          const dt = Math.min(64, now - last);
-          const p = a.duration > 0 ? a.currentTime / a.duration : 0;
-          // Tape moves at a constant speed, so a reel turns faster the less tape it holds
-          packs(p).forEach((pack, i) => {
-            angles[i] = (angles[i] + (dt * 0.12) / (0.45 + pack)) % 360;
-            const hub = hubs.current[i];
-            if (hub) hub.style.transform = `rotate(${angles[i]}deg)`;
-          });
-        }
+        const dt = Math.min(64, now - last);
+        const p = a.duration > 0 ? a.currentTime / a.duration : 0;
+        // Tape moves at a constant speed, so a reel turns faster the less tape it holds
+        packs(p).forEach((pack, i) => {
+          angles[i] = (angles[i] + (dt * 0.12) / (0.45 + pack)) % 360;
+          const hub = hubs.current[i];
+          if (hub) hub.style.transform = `rotate(${angles[i]}deg)`;
+        });
       }
       last = now;
       raf = requestAnimationFrame(tick);
@@ -210,10 +212,29 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
     });
   }, [playing, trackTitle, artist, artworkSrc]);
 
+  // Once the length is known, cue the tape to its start point if it hasn't moved yet
+  const readDuration = (a: HTMLAudioElement) => {
+    if (!Number.isFinite(a.duration) || a.duration <= 0) return;
+    setDuration(a.duration);
+    if (a.currentTime === 0 && startAt > 0 && startAt < a.duration) a.currentTime = startAt;
+  };
+
+  // A cached track can report its length before React is listening: read it on mount too
+  useEffect(() => {
+    if (audio.current) readDuration(audio.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cueUp = (a: HTMLAudioElement) => {
+    a.currentTime = startAt;
+    setTime(startAt);
+  };
+
   const toggle = () => {
     const a = audio.current;
     if (!a) return;
     if (a.paused) {
+      if (a.ended || a.currentTime === 0) cueUp(a);
       a.play().catch((e: DOMException) => {
         if (e.name !== 'AbortError') setFailed(true);
       });
@@ -224,9 +245,7 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
 
   const restart = () => {
     const a = audio.current;
-    if (!a) return;
-    a.currentTime = 0;
-    setTime(0);
+    if (a) cueUp(a);
   };
 
   const toggleMute = () => {
@@ -363,11 +382,12 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
           preload="metadata"
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
-          onDurationChange={(e) => {
-            const d = e.currentTarget.duration;
-            if (Number.isFinite(d)) setDuration(d);
+          onEnded={(e) => {
+            setPlaying(false);
+            cueUp(e.currentTarget);
           }}
+          onDurationChange={(e) => readDuration(e.currentTarget)}
+          onLoadedMetadata={(e) => readDuration(e.currentTarget)}
           onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
           onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
           onError={() => setFailed(true)}

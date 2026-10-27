@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { formatPostDate, pad2, photoSrc, photoSrcSet, type AjPhoto } from '../data/ajShield';
+import { formatPostDate, photoSrc, photoSrcSet, type AjPhoto } from '../data/ajShield';
+import { pad2 } from '../data/products';
 import { gsap, prefersReducedMotion, setScrollLocked } from '../lib/smoothScroll';
 import { ArrowLeftIcon, ArrowUpRightIcon, CloseIcon } from './icons';
 

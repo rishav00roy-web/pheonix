@@ -6,17 +6,24 @@ import { entranceDelay } from '../lib/pageTransition';
 import { SplitText } from '../components/SplitText';
 import { PlateViewer } from '../components/PlateViewer';
 import { CassettePlayer } from '../components/CassettePlayer';
+import { FlexCarousel, type FlexItem } from '../components/FlexCarousel';
 import { Crops, Rule } from '../components/Editorial';
 import { ArrowUpRightIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../components/icons';
-import { SOCIAL } from '../data/brand';
+import { SOCIAL, YOUTUBE_URL } from '../data/brand';
+import { pad2 } from '../data/products';
 import {
+  APPLE_MUSIC_URL,
+  FACTS,
   FOLLOW,
   PLATES,
   PORTRAIT,
+  SONG_COUNT,
+  SONGS,
+  SONGS_PHOTO,
+  STORY,
+  STORY_PHOTO,
   TRACK,
-  YOUTUBE_URL,
   formatPostDate,
-  pad2,
   photoSmall,
   photoSquare,
   photoSrc,
@@ -28,27 +35,21 @@ import './AjShield.css';
 
 const NAME = 'AJ Shield';
 
-// Where each plate sits on the desktop grid: mixed widths, staggered drops
-const PLACES = [
-  'lg:col-start-1 lg:col-span-5',
-  'lg:col-start-7 lg:col-span-3 lg:mt-24',
-  'lg:col-start-10 lg:col-span-3 lg:mt-48',
-  'lg:col-start-2 lg:col-span-3',
-  'lg:col-start-6 lg:col-span-4 lg:-mt-16',
-  'lg:col-start-10 lg:col-span-3 lg:mt-12',
-  'lg:col-start-1 lg:col-span-3 lg:mt-8',
-  'lg:col-start-5 lg:col-span-4 lg:-mt-8',
-  'lg:col-start-10 lg:col-span-3 lg:mt-16',
-];
-// Phones: two columns, the square plate and the first run full width
-const MOBILE_WIDE = new Set([0, 4]);
+// The lookbook plates as carousel cards, captioned with their look and, when known, the post date
+const LOOKS: FlexItem[] = PLATES.map((p) => ({
+  src: photoSmall(p),
+  alt: p.alt,
+  title: p.title ?? 'Plate',
+  subtitle: [p.subtitle, p.date && formatPostDate(p.date)].filter(Boolean).join(' · '),
+}));
 
-// The founder's page: her portrait, her words (to come), her photographs as
-// numbered plates, her music, and where to follow her.
+
+// The founder's page: her portrait, who she is, her photographs as numbered
+// plates, her music and tracks, and where to follow her.
 export const AjShield: React.FC = () => {
   useDocumentTitle(
     NAME,
-    'AJ Shield, founder of Pheonix: rapper, artist and model from Jorhat, Assam. Her photographs, her music and where to follow her.'
+    'AJ Shield (Anjali Ojha), the independent Assamese rapper behind Pheonix: who she is, her tracks, her photographs and where to follow her.'
   );
   const scope = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<number | null>(null);
@@ -87,9 +88,10 @@ export const AjShield: React.FC = () => {
   return (
     <div ref={scope}>
       <Opening />
-      <Words />
+      <Story />
       <Lookbook onOpen={setOpen} />
       <Music />
+      <Songs />
       <Follow />
       <PlateViewer plates={PLATES} index={open} firstNo={2} onIndex={setOpen} onClose={() => setOpen(null)} />
     </div>
@@ -146,20 +148,61 @@ function Opening() {
   );
 }
 
-function Words() {
+function Story() {
+  const [before, after] = STORY.lede.split(NAME);
   return (
-    <section aria-labelledby="aj-words" className="frame py-16 lg:py-24 border-t border-obsidian-700">
-      <div className="grid-12 gap-y-8">
-        <h2 id="aj-words" data-fade className="headline text-[clamp(36px,4.5vw,64px)] lg:col-span-4">
-          In her words
-        </h2>
-        <div className="lg:col-start-6 lg:col-span-7 flex flex-col gap-6">
-          <p data-fade className="aj-placeholder">
-            [Placeholder: a line from one of AJ’s own captions, quoted exactly, with the post date and a link to the post.]
-          </p>
-          <p data-fade className="aj-placeholder">[Placeholder: how Pheonix started, in AJ’s own words.]</p>
-          <p data-fade className="aj-placeholder">[Placeholder: what she wants Pheonix to stand for.]</p>
+    <section aria-labelledby="aj-story" className="frame py-20 lg:py-32 border-t border-obsidian-700">
+      <div data-fade className="flex items-center justify-between gap-4 border-b border-obsidian-700 pb-3">
+        <h2 id="aj-story" className="mono-label text-chrome-400">Her story</h2>
+        <span className="mono-label text-chrome-400">Anjali Ojha · Assam</span>
+      </div>
+
+      <p data-fade className="headline mt-10 lg:mt-16 text-[clamp(30px,4.4vw,64px)] leading-[1.1] max-w-[30ch]">
+        {before}
+        <em className="italic text-ember-400">{NAME}</em>
+        {after}
+      </p>
+
+      <div className="grid-12 gap-y-14 mt-16 lg:mt-24">
+        <div className="lg:col-start-5 lg:col-span-8">
+          <ol>
+            {STORY.chapters.map((c, i) => (
+              <li
+                key={c.title}
+                data-fade
+                className="grid grid-cols-[3rem_minmax(0,1fr)] lg:grid-cols-[5rem_minmax(0,1fr)] gap-x-2 py-8 lg:py-10 border-t border-obsidian-700"
+              >
+                <span className="mono-label text-ember-400 num pt-2">{pad2(i + 1)}</span>
+                <div>
+                  <h3 className="headline text-[clamp(26px,2.6vw,38px)]">{c.title}</h3>
+                  <p className="mt-4 text-[17px] leading-[1.7] text-chrome-400 max-w-[58ch]">{c.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <div data-fade className="border-t border-obsidian-700 pt-8 lg:pt-10 grid grid-cols-[3rem_minmax(0,1fr)] lg:grid-cols-[5rem_minmax(0,1fr)] gap-x-2">
+            <span aria-hidden="true" className="text-ember-400 pt-1">◆</span>
+            <div>
+              <p className="headline italic text-[clamp(22px,2vw,30px)] leading-snug max-w-[34ch]">{STORY.close}</p>
+              <TLink to="/shop" className="text-link mt-6">
+                See what she picked
+              </TLink>
+            </div>
+          </div>
         </div>
+
+        <aside aria-label="Liner notes" className="order-first lg:order-none lg:col-start-1 lg:col-span-3 lg:row-start-1">
+          <SidePlate photo={STORY_PHOTO} className="w-3/4 sm:w-1/2 lg:w-full mb-10" sizes="(min-width: 1024px) 22vw, 75vw" />
+          <p data-fade className="mono-label text-chrome-400 pb-3 border-b border-obsidian-700">Liner notes</p>
+          <dl data-fade>
+            {FACTS.map((f) => (
+              <div key={f.label} className="py-4 border-b border-obsidian-700">
+                <dt className="mono-label text-chrome-400">{f.label}</dt>
+                <dd className="mt-1 text-[17px] text-bone-100">{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </aside>
       </div>
     </section>
   );
@@ -167,51 +210,27 @@ function Words() {
 
 function Lookbook({ onOpen }: { onOpen: (i: number) => void }) {
   return (
-    <section aria-labelledby="aj-lookbook" className="frame py-16 lg:py-24 border-t border-obsidian-700">
-      <div className="flex items-end justify-between gap-6">
+    <section aria-labelledby="aj-lookbook" className="py-16 lg:py-24 border-t border-obsidian-700">
+      <div className="frame flex items-end justify-between gap-6">
         <SplitText as="h2" id="aj-lookbook" text="Lookbook" className="headline text-[clamp(36px,4.5vw,64px)]" />
-        <p data-fade className="mono-label text-chrome-400 num pb-2">Plates 02 to {pad2(PLATES.length + 1)}</p>
+        <p data-fade className="mono-label text-chrome-400 num pb-2 whitespace-nowrap">Plates 02 to {pad2(PLATES.length + 1)}</p>
       </div>
-      <ul className="mt-10 lg:mt-14 grid grid-cols-2 lg:grid-cols-12 gap-x-3 gap-y-8 lg:gap-x-6 lg:gap-y-10 items-start">
-        {PLATES.map((p, i) => (
-          <li key={p.id} className={`${MOBILE_WIDE.has(i) ? 'col-span-2' : ''} ${PLACES[i]}`}>
-            <Plate photo={p} no={i + 2} onOpen={() => onOpen(i)} wide={MOBILE_WIDE.has(i)} />
-          </li>
-        ))}
-      </ul>
+      <div data-fade className="mt-8 lg:mt-12">
+        <FlexCarousel
+          items={LOOKS}
+          preset="liquid"
+          intro="rise"
+          cardHeight={0.5}
+          gap={12}
+          squeeze={0.2}
+          focusOnClick
+          captions
+          firstNo={2}
+          onOpen={onOpen}
+          label="Lookbook"
+        />
+      </div>
     </section>
-  );
-}
-
-function Plate({ photo, no, onOpen, wide }: { photo: AjPhoto; no: number; onOpen: () => void; wide: boolean }) {
-  return (
-    <figure className="relative">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="aj-plate group relative block w-full border border-bone-100/[0.08] hover:border-bone-100/30 p-2 sm:p-3 bg-obsidian-950 transition-colors duration-500"
-        aria-label={`Open plate ${pad2(no)} full screen`}
-      >
-        <Crops />
-        <span data-plate className="relative block overflow-hidden bg-obsidian-900" style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
-          <img
-            src={photoSmall(photo)}
-            srcSet={photoSrcSet(photo)}
-            sizes={wide ? '(min-width: 1024px) 40vw, 100vw' : '(min-width: 1024px) 25vw, 50vw'}
-            width={photo.width}
-            height={photo.height}
-            alt={photo.alt}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 w-full h-[108%] -top-[4%] object-cover"
-          />
-        </span>
-      </button>
-      <figcaption className="mt-2 flex flex-wrap justify-between gap-x-3 text-[13px] text-chrome-400">
-        <span className="mono-label">Plate {pad2(no)}</span>
-        {photo.date && <span className="num">{formatPostDate(photo.date)}</span>}
-      </figcaption>
-    </figure>
   );
 }
 
@@ -236,8 +255,92 @@ function Music() {
           </a>
         </div>
         <div data-fade className="lg:col-start-7 lg:col-span-6 flex justify-center">
-          <CassettePlayer audioSrc={TRACK.audio} trackTitle={TRACK.title} artist={NAME} artworkSrc={TRACK.art} />
+          <CassettePlayer audioSrc={TRACK.audio} trackTitle={TRACK.title} artist={NAME} artworkSrc={TRACK.art} startAt={TRACK.startAt} />
         </div>
+      </div>
+    </section>
+  );
+}
+
+// A single framed photograph that sits beside the copy, opened and drifted like the plates
+function SidePlate({ photo, className = '', sizes }: { photo: AjPhoto; className?: string; sizes: string }) {
+  return (
+    <figure className={`relative border border-bone-100/[0.08] p-2 sm:p-3 bg-obsidian-950 ${className}`}>
+      <Crops />
+      <span data-plate className="relative block overflow-hidden bg-obsidian-900" style={{ aspectRatio: `${photo.width} / ${photo.height}` }}>
+        <img
+          src={photoSmall(photo)}
+          srcSet={photoSrcSet(photo)}
+          sizes={sizes}
+          width={photo.width}
+          height={photo.height}
+          alt={photo.alt}
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 w-full h-[108%] -top-[4%] object-cover"
+        />
+      </span>
+    </figure>
+  );
+}
+
+function Songs() {
+  return (
+    <section aria-labelledby="aj-songs" className="frame py-20 lg:py-32 border-t border-obsidian-700">
+      <div className="grid-12 gap-y-10 items-end">
+        <div className="lg:col-span-7">
+          <SplitText as="h2" id="aj-songs" text="Her songs" className="headline text-[clamp(44px,6.5vw,96px)]" />
+          <p data-fade className="mt-5 text-[17px] leading-[1.7] text-chrome-400 max-w-[46ch]">
+            Every track here is hers. Some she made alone; on the rest, the artists she made them with are named under the title.
+          </p>
+          <div data-fade className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
+            <span className="mono-label text-chrome-400 num">{pad2(SONG_COUNT)} tracks</span>
+            <a href={APPLE_MUSIC_URL} target="_blank" rel="noopener noreferrer" className="text-link">
+              All of them on Apple Music
+              <ArrowUpRightIcon className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+        <SidePlate photo={SONGS_PHOTO} className="lg:col-start-9 lg:col-span-4" sizes="(min-width: 1024px) 30vw, 100vw" />
+      </div>
+
+      <div className="mt-14 lg:mt-20">
+        {SONGS.map((g) => (
+          <div key={g.label} className="grid-12 border-t border-obsidian-700">
+            <p data-fade className="lg:col-span-3 pt-6 lg:pt-9 flex items-baseline gap-3">
+              <span className="mono-label text-ember-400">{g.label}</span>
+              <span className="mono-label text-chrome-400 num">{pad2(g.tracks.length)}</span>
+            </p>
+            <ul className="lg:col-start-4 lg:col-span-9">
+              {g.tracks.map((t, i) => (
+                <li key={t.title} data-fade className={`py-6 lg:py-9 ${i > 0 ? 'border-t border-obsidian-700/60' : ''}`}>
+                  <div className="flex items-baseline justify-between gap-6">
+                    <h3 className="headline text-[clamp(34px,5vw,72px)] leading-[1] [overflow-wrap:anywhere]">{t.title}</h3>
+                    {t.year && <span className="mono-label text-chrome-400 num shrink-0">{t.year}</span>}
+                  </div>
+                  <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-baseline gap-x-6 gap-y-2">
+                    {t.with && <span className="text-[15px] text-bone-100">with {t.with}</span>}
+                    <span className="text-[15px] text-chrome-400 max-w-[52ch]">{t.note}</span>
+                  </div>
+                  {t.title === TRACK.title && (
+                    <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                      <span className="mono-label text-ember-400 flex items-center gap-2">
+                        <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-ember-400" />
+                        On the tape above
+                      </span>
+                      {t.video && (
+                        <a href={t.video} target="_blank" rel="noopener noreferrer" className="text-link">
+                          <YouTubeIcon className="w-5 h-5" />
+                          Watch the video
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </section>
   );

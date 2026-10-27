@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { CARE_NOTE, categoryLabel, findProduct, formatEdition, formatPrice, PRODUCTS, SHIPPING_NOTE, smallShot, type Product } from '../data/products';
+import { CARE_NOTE, categoryLabel, findProduct, formatEdition, formatPrice, pad2, PRODUCTS, SHIPPING_NOTE, smallShot, type Product } from '../data/products';
 import { useCart, whatsappLink } from '../lib/bag';
 import { gsap, MOTION_OK, scrollToTarget, useGSAP } from '../lib/smoothScroll';
 import { TLink } from '../lib/transition';
@@ -21,7 +21,9 @@ export const ProductPage: React.FC = () => {
   return <Piece key={product.id} product={product} />;
 };
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
+// The page draws two galleries, a stack for desktop and a swipe strip for phones,
+// and hides one. Only the one on screen loads its first photographs at once.
+const DESKTOP = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
 
 const Piece: React.FC<{ product: Product }> = ({ product }) => {
   const scope = useRef<HTMLDivElement>(null);
@@ -120,7 +122,7 @@ const Piece: React.FC<{ product: Product }> = ({ product }) => {
                     className="paper block w-[72px] aspect-[4/5] overflow-hidden border border-transparent hover:border-bone-100 transition-colors duration-300"
                     aria-label={`Photograph ${i + 1} of ${count}`}
                   >
-                    <img src={smallShot(src)} alt="" className="w-full h-full object-cover" />
+                    <img src={smallShot(src)} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </button>
                 </li>
               ))}
@@ -136,7 +138,7 @@ const Piece: React.FC<{ product: Product }> = ({ product }) => {
                   <img
                     src={src}
                     alt={i === 0 ? product.name : `${product.name}, photograph ${i + 1} of ${count}`}
-                    loading={i < 2 ? 'eager' : 'lazy'}
+                    loading={DESKTOP && i < 2 ? 'eager' : 'lazy'}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
@@ -156,7 +158,7 @@ const Piece: React.FC<{ product: Product }> = ({ product }) => {
                   <img
                     src={src}
                     alt={i === 0 ? product.name : `${product.name}, photograph ${i + 1} of ${count}`}
-                    loading={i === 0 ? 'eager' : 'lazy'}
+                    loading={!DESKTOP && i === 0 ? 'eager' : 'lazy'}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -176,7 +178,7 @@ const Piece: React.FC<{ product: Product }> = ({ product }) => {
                         aria-current={slide === i ? 'true' : undefined}
                         className={`paper block w-11 h-14 overflow-hidden border transition-colors ${slide === i ? 'border-bone-100' : 'border-transparent opacity-60'}`}
                       >
-                        <img src={smallShot(src)} alt="" className="w-full h-full object-cover" />
+                        <img src={smallShot(src)} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       </button>
                     </li>
                   ))}

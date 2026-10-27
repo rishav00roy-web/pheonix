@@ -363,6 +363,8 @@ export const formatPrice = (rupees: number) => RUPEES.format(rupees);
 /** The amount alone, "10,999", for places that set the ₹ sign in another face */
 export const formatAmount = (rupees: number) => rupees.toLocaleString('en-IN');
 
+/** "07": plate and piece numbers */
+export const pad2 = (n: number) => String(n).padStart(2, '0');
 /** "No. 001 of 060 pieces": the edition line, numbered like a certificate */
 const pad3 = (n: number) => String(n).padStart(3, '0');
 export const formatEdition = (e: Edition) => `No. ${pad3(e.serial)} of ${pad3(e.of)} ${e.unit}`;
