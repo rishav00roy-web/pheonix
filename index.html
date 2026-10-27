@@ -17,9 +17,49 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preload" as="image" href="/brand/logo.webp" fetchpriority="high" />
+    <!-- First-visit preloader: painted straight from the HTML so the dark screen and
+         crest show before the bundle loads; src/lib/preloader.ts plays and removes it. -->
+    <script>
+      try { if (sessionStorage.getItem('pheonix-intro')) document.documentElement.classList.add('pl-seen'); } catch (e) {}
+    </script>
+    <style>
+      #preloader { position: fixed; inset: 0; z-index: 100; overflow: hidden; touch-action: none; animation: pl-failsafe 0.6s ease 9s forwards; }
+      .pl-seen #preloader { display: none; }
+      html:not(.pl-seen) { overflow: hidden; }
+      html:not(.pl-seen) .start-hint { visibility: hidden; }
+      .pl-panel { position: absolute; top: 0; bottom: 0; width: 50.5%; background: #030305; will-change: transform; }
+      .pl-panel::before { content: ''; position: absolute; inset: 0; opacity: 0.09; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+      .pl-l { left: 0; background-image: radial-gradient(120% 80% at 100% 50%, rgb(255 68 31 / 0.07), transparent 60%); }
+      .pl-r { right: 0; background-image: radial-gradient(120% 80% at 0% 50%, rgb(255 68 31 / 0.07), transparent 60%); }
+      .pl-l::after, .pl-r::after { content: ''; position: absolute; top: 0; bottom: 0; width: 1px; opacity: 0; background: linear-gradient(transparent, rgb(255 120 73 / 0.8) 50%, transparent); }
+      .pl-l::after { right: 0; } .pl-r::after { left: 0; }
+      #preloader.is-open .pl-l::after, #preloader.is-open .pl-r::after { opacity: 1; transition: opacity 0.3s; }
+      .pl-line { position: absolute; top: 0; left: 50%; width: 2px; height: 100%; margin-left: -1px; transform: scaleY(0); will-change: transform, opacity;
+        background: linear-gradient(transparent, rgb(255 120 73 / 0.9) 22%, #fff3ea 50%, rgb(255 120 73 / 0.9) 78%, transparent);
+        box-shadow: 0 0 18px 2px rgb(255 68 31 / 0.55); }
+      .pl-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+      .pl-crest { position: relative; width: min(64vw, 400px); will-change: transform, opacity; opacity: 0; animation: pl-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards; }
+      .pl-crest img { display: block; width: 100%; height: auto; user-select: none; }
+      /* The crest is two halves so the split can carry each one out on its panel. */
+      .pl-half { will-change: transform; }
+      .pl-hl { clip-path: inset(0 50% 0 0); }
+      .pl-hr { position: absolute; inset: 0; clip-path: inset(0 0 0 50%); }
+      .pl-glow { position: absolute; inset: -45% -30%; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, rgb(255 68 31 / 0.34), rgb(255 68 31 / 0.08) 55%, transparent 75%); animation: pl-breathe 2.6s ease-in-out infinite; }
+      @keyframes pl-rise { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
+      @keyframes pl-breathe { 0%, 100% { opacity: 0.6; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.04); } }
+      @keyframes pl-failsafe { to { opacity: 0; visibility: hidden; } }
+      @media (prefers-reduced-motion: reduce) { .pl-crest { animation: none; opacity: 1; } .pl-glow { animation: none; } }
+    </style>
   </head>
   <body class="antialiased min-h-screen">
     <div id="root"></div>
+    <div id="preloader" aria-hidden="true">
+      <div class="pl-panel pl-l"></div>
+      <div class="pl-panel pl-r"></div>
+      <div class="pl-stage"><div class="pl-crest"><div class="pl-glow"></div><div class="pl-half pl-hl"><img src="/brand/logo.webp" alt="" width="951" height="565" draggable="false" /></div><div class="pl-half pl-hr"><img src="/brand/logo.webp" alt="" width="951" height="565" draggable="false" /></div></div></div>
+      <div class="pl-line"></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

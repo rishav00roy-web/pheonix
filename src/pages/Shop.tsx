@@ -1,8 +1,9 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CATEGORIES, PRODUCTS, type CategoryId } from '../data/products';
+import { CATEGORIES, pad2, PRODUCTS, type CategoryId } from '../data/products';
 import { STYLE_PLATE, photoSmall } from '../data/ajShield';
-import { Flip, gsap, MOTION_OK, prefersReducedMotion, queueRefresh, ScrollTrigger, useGSAP } from '../lib/smoothScroll';
+import { Flip } from 'gsap/Flip';
+import { gsap, MOTION_OK, prefersReducedMotion, queueRefresh, ScrollTrigger, useGSAP } from '../lib/smoothScroll';
 import { entranceDelay } from '../lib/pageTransition';
 import { TLink } from '../lib/transition';
 import { SplitText } from '../components/SplitText';
@@ -10,12 +11,13 @@ import { Crops, Rule } from '../components/Editorial';
 import { ProductCard } from '../components/ProductCard';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
+gsap.registerPlugin(Flip);
+
 type Filter = 'all' | CategoryId;
 const isFilter = (v: string | null): v is Filter => !!v && CATEGORIES.some((c) => c.id === v);
 
 // Every ninth tile in the visible run is a feature tile, two columns by two rows
 const isFeature = (position: number) => position % 9 === 0;
-const pad2 = (n: number) => String(n).padStart(2, '0');
 // "All" counts every piece, so the categories are the rest
 const KINDS = CATEGORIES.length - 1;
 

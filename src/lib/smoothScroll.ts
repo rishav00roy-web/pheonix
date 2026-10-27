@@ -1,12 +1,12 @@
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Flip } from 'gsap/Flip';
 import { useGSAP } from '@gsap/react';
 
 // One scroll system for the whole site: Lenis smooths the wheel, GSAP's
 // ticker drives Lenis, and every Lenis scroll updates ScrollTrigger.
-gsap.registerPlugin(ScrollTrigger, Flip, useGSAP);
+// Flip registers itself in the Shop, the only page that uses it.
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 export const prefersReducedMotion =
   typeof window !== 'undefined' &&
@@ -90,4 +90,4 @@ export function setScrollLocked(locked: boolean, key = 'overlay') {
   else lenis.start();
 }
 
-export { gsap, ScrollTrigger, Flip, useGSAP };
+export { gsap, ScrollTrigger, useGSAP };

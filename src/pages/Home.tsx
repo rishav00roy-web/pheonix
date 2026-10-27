@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { CATEGORIES, FEATURED_IDS, findProduct, smallShot, type CategoryId, type Product } from '../data/products';
+import { CATEGORIES, FEATURED_IDS, findProduct, pad2, smallShot, type CategoryId, type Product } from '../data/products';
 import { BRAND } from '../data/brand';
 import { gsap, MOTION_OK, prefersReducedMotion, ScrollTrigger, useGSAP } from '../lib/smoothScroll';
 import { TLink } from '../lib/transition';
@@ -177,7 +177,7 @@ function Doors() {
                   </div>
                   <div className="mt-4 flex items-baseline justify-between gap-4">
                     <h3 className="headline text-[28px] lg:text-[32px] group-hover:text-ember-400 transition-colors duration-300">{d.label}</h3>
-                    <span className="mono-label text-chrome-400 num">{String(count).padStart(2, '0')} {count === 1 ? 'piece' : 'pieces'}</span>
+                    <span className="mono-label text-chrome-400 num">{pad2(count)} {count === 1 ? 'piece' : 'pieces'}</span>
                   </div>
                 </TLink>
               </li>

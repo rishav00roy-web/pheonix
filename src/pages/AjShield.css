@@ -1,12 +1,5 @@
 /* Hallmark · checked: 2026-10-26 · genre: editorial · kept on purpose: 63, the founder line 'Founder · Rapper · Artist · Model' is the brief's own wording; focus, active and disabled states come from index.css */
-/* AJ Shield: the letter clips for her name, and the placeholder style. */
+/* AJ Shield: the letter clips for her name. */
 .aj-name-clip { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.1em; margin-bottom: -0.1em; }
 .aj-name-letter { display: inline-block; will-change: transform; }
 
-/* Text still to come from AJ: dashed, quiet, unmistakably unfinished */
-.aj-placeholder {
-  border: 1px dashed rgb(var(--chrome-400-rgb) / 0.5);
-  padding: 16px 20px;
-  color: rgb(var(--chrome-400-rgb));
-  font-size: 17px;
-}

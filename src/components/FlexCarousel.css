@@ -1,0 +1,57 @@
+/* The FlexCarousel: one WebGL canvas across the full width, the caption
+   centred beneath it. Nothing on the stage but the canvas, so scrolling past
+   it costs one composited layer. */
+.flex-carousel { outline: none; }
+.flex-carousel:focus-visible .flex-stage { outline: 2px solid rgb(var(--ember-400-rgb)); outline-offset: 4px; }
+
+.flex-stage {
+  position: relative;
+  height: 560px;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.flex-stage:active { cursor: grabbing; }
+@media (max-width: 767px) {
+  .flex-stage { height: 440px; }
+}
+
+.flex-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.flex-caption {
+  margin-top: 12px;
+  padding-inline: var(--gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.flex-caption-title, .flex-count-now { display: inline-block; animation: flex-tick 0.5s var(--ease-quiet); }
+@keyframes flex-tick {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flex-caption-title, .flex-count-now { animation: none; }
+}
+
+/* Without WebGL: a plain row that scrolls sideways */
+.flex-fallback {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(64vw, 280px);
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-inline: var(--gutter);
+}
+.flex-fallback figure { scroll-snap-align: center; }
+.flex-fallback img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+

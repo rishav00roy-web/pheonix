@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Product } from '../data/products';
-import { categoryLabel, formatAmount, PRODUCTS, smallShot } from '../data/products';
+import { categoryLabel, formatAmount, pad2, PRODUCTS, smallShot } from '../data/products';
 import { useCart } from '../lib/bag';
 import { TLink } from '../lib/transition';
 import { Crops } from './Editorial';
@@ -15,7 +15,8 @@ interface ProductCardProps {
   priority?: boolean;
 }
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
+// The second photograph only ever shows on hover, so touch screens never fetch it
+const CAN_HOVER = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
 
 // The specimen card from the original site: a dark card inside crop marks,
 // the photograph printed on warm paper with its category tagged on it,
@@ -24,7 +25,8 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
 // and colour in the bag and opens it.
 export const ProductCard: React.FC<ProductCardProps> = ({ product, large = false, className = '', priority = false }) => {
   const { add, open } = useCart();
-  const [main, second] = product.gallery;
+  const [main, hoverShot] = product.gallery;
+  const second = CAN_HOVER ? hoverShot : undefined;
   const src = (s: string) => (large ? s : smallShot(s));
   const no = pad2(PRODUCTS.indexOf(product) + 1);
   const href = `/p/${product.id}`;

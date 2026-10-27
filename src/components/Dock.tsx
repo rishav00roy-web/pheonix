@@ -6,6 +6,7 @@ import { TLink } from '../lib/transition';
 import { entranceDelay } from '../lib/pageTransition';
 import { gsap, prefersReducedMotion } from '../lib/smoothScroll';
 import { BagIcon, BookIcon, HangerIcon, HomeIcon, InstagramIcon, WhatsAppIcon } from './icons';
+import './Dock.css';
 
 type Item =
   | { kind: 'route'; label: string; to: string; Icon: React.FC<{ className?: string }>; match: (p: string) => boolean }
@@ -21,18 +22,15 @@ const ITEMS: Item[] = [
   { kind: 'out', label: 'WhatsApp', href: whatsappLink(), Icon: WhatsAppIcon },
 ];
 
-// Items rest in chrome and brighten to bone on hover; the current page stays bone
-const itemClass = (current = false) =>
-  `peer relative w-11 h-11 lg:w-12 lg:h-12 flex items-center justify-center transition-[color,transform] duration-300 active:scale-95 hover:text-bone-100 ${
-    current ? 'text-bone-100' : 'text-chrome-400'
-  }`;
+// Every item is a keycap (Dock.css); the current page's key stays latched down
+const itemClass = (on = false) => `peer dock-key${on ? ' is-on' : ''}`;
 
-// The dock: an obsidian tab on the bottom edge, slanted sides, an ember top
-// edge. The site's own pages and the bag come first; a hairline sets
-// Instagram and WhatsApp apart. An ember diamond, the one from the Home hero,
-// marks the current page and slides between items. The bag gives a small
-// jump when a piece goes in. The dock rises in after the page wipe and tucks
-// down while the page is flung.
+// The dock: a graphite console on the bottom edge, slanted sides, an ember top
+// edge, keycaps standing in a sunken tray. The site's own pages and the bag
+// come first; a groove sets Instagram and WhatsApp apart. An ember diamond,
+// the one from the Home hero, glows in the tray under the current page and
+// slides between keys. The bag gives a small jump when a piece goes in. The
+// dock rises in after the page wipe and tucks down while the page is flung.
 export const Dock: React.FC = () => {
   const { pathname } = useLocation();
   const { count, open } = useCart();
@@ -120,15 +118,16 @@ export const Dock: React.FC = () => {
     <nav
       ref={nav}
       aria-label="Main"
-      className="relative pointer-events-auto w-[min(calc(100vw-16px),420px)] lg:w-[408px]"
+      className="dock relative pointer-events-auto w-[min(calc(100vw-16px),420px)] lg:w-[408px]"
     >
-      {/* Ember panel, with the obsidian panel set just inside it: a 1px ember edge along the top and both slants */}
+      {/* Ember panel, with the graphite body set just inside it: a 1px ember edge along the top and both slants */}
       <div aria-hidden="true" className="dock-edge absolute inset-0 bg-ember-500" />
-      <div aria-hidden="true" className="dock-body absolute inset-x-0 bottom-0 top-px bg-obsidian-900" />
+      <div aria-hidden="true" className="dock-body absolute inset-x-0 bottom-0 top-px" />
+      <div aria-hidden="true" className="dock-tray" />
 
       <ul
         ref={list}
-        className="relative flex items-center justify-between h-[var(--dock-h)] px-[calc(var(--dock-slant)+8px)] lg:px-[calc(var(--dock-slant)+14px)] pb-[var(--safe-b)] box-content"
+        className="relative flex items-center justify-between h-[calc(var(--dock-h)-6px)] px-[calc(var(--dock-slant)+8px)] lg:px-[calc(var(--dock-slant)+14px)] pb-[calc(var(--safe-b)+6px)] box-content"
       >
         {ITEMS.map((it, i) => {
           const tip = (
@@ -146,10 +145,10 @@ export const Dock: React.FC = () => {
             <li key={it.label} className="relative flex justify-center">
               {/* The hairline between the site and the links that leave it */}
               {it.kind === 'out' && i > 0 && ITEMS[i - 1].kind !== 'out' && (
-                <span aria-hidden="true" className="absolute -left-[5px] top-1/2 -translate-y-1/2 w-px h-5 bg-obsidian-700" />
+                <span aria-hidden="true" className="dock-groove absolute -left-[5px] top-1/2 -translate-y-1/2 w-px h-6" />
               )}
               {it.kind === 'route' && (
-                <TLink to={it.to} aria-label={it.label} aria-current={i === active ? 'page' : undefined} className={itemClass(i === active)}>
+                <TLink to={it.to} aria-label={it.label} aria-current={i === active ? 'page' : undefined} className={itemClass()}>
                   <it.Icon className="w-6 h-6" />
                 </TLink>
               )}
@@ -159,7 +158,7 @@ export const Dock: React.FC = () => {
                   {count > 0 && (
                     <span
                       aria-hidden="true"
-                      className="absolute top-0.5 right-0 min-w-[20px] h-5 px-1 rounded-full bg-ember-500 text-void text-[13px] leading-5 text-center font-semibold num"
+                      className="dock-badge absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-ember-500 text-void text-[13px] leading-5 text-center font-semibold num"
                     >
                       {count}
                     </span>
@@ -180,7 +179,7 @@ export const Dock: React.FC = () => {
         {dot !== null && (
           <span
             aria-hidden="true"
-            className="absolute left-0 bottom-[calc(var(--safe-b)+5px)] w-[5px] h-[5px] -ml-[2.5px] bg-ember-500 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+            className="dock-led absolute left-0 bottom-[calc(var(--safe-b)+4px)] w-[5px] h-[5px] -ml-[2.5px] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
             style={{ transform: `translateX(${dot}px) rotate(45deg)` }}
           />
         )}

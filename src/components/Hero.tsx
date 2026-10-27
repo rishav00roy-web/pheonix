@@ -1,10 +1,7 @@
 import { useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGSAP } from '@gsap/react';
+import { gsap, prefersReducedMotion, useGSAP } from '../lib/smoothScroll';
+import { onPreloader } from '../lib/preloader';
 import './Hero.css';
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const LOGO_SRC = '/brand/logo.webp';
 const WORD = 'PHEONIX';
@@ -20,9 +17,6 @@ type Spark = {
 };
 
 type Ember = { x: number; y: number; v: number; size: number; life: number; phase: number };
-
-const prefersReducedMotion = () =>
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Samples the crest's opaque pixels into spark targets laid over the crest image's box. */
 function sampleCrest(img: HTMLImageElement, slot: DOMRect, host: DOMRect, budget: number): Spark[] {
@@ -71,7 +65,7 @@ export default function Hero() {
       const ctx = canvas?.getContext('2d');
       if (!canvas || !crest || !ctx) return;
 
-      const reduced = prefersReducedMotion();
+      const reduced = prefersReducedMotion;
       const letters = host.querySelectorAll('.hero-word span');
 
       if (reduced) {
@@ -170,12 +164,10 @@ export default function Hero() {
       };
 
       // Runs after the crest loads, so it must join the GSAP context to be cleaned up.
-      const start = contextSafe!(() => {
-        layout();
-        gsap.ticker.add(draw);
-
-        const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
-        intro
+      // On a first visit the intro waits for the preloader's panels to part.
+      let offReveal = () => {};
+      const playIntro = contextSafe!(() => {
+        gsap.timeline({ defaults: { ease: 'power3.out' } })
           .to('.hero-rule', { scaleY: 1, scaleX: 1, duration: 1.1, ease: 'expo.inOut' }, 0)
           .to('.hero-diamond', { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(3)' }, 0.75)
           .to(state, { assemble: 1, duration: 2.6, ease: 'none' }, 0.2)
@@ -184,6 +176,13 @@ export default function Hero() {
           .to('.hero-tag', { opacity: 1, y: 0, duration: 0.8 }, 1.9)
           .to('.hero-foot', { opacity: 1, duration: 0.8 }, 2.3)
           .add(() => host.classList.add('is-lit'), 3.2);
+      });
+
+      const start = contextSafe!(() => {
+        layout();
+        gsap.ticker.add(draw);
+
+        offReveal = onPreloader('reveal', playIntro);
 
         // Scroll: the crest bursts back into embers and the word parts.
         gsap.timeline({
@@ -257,6 +256,7 @@ export default function Hero() {
       }
 
       return () => {
+        offReveal();
         crest.removeEventListener('load', start);
         crest.removeEventListener('error', fallback);
         host.classList.remove('is-lit', 'is-armed');
