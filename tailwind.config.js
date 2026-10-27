@@ -7,6 +7,9 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Touch screens skip hover: styles, so a tap on iOS never sticks on a hover
+  // state or needs a second tap to go through
+  future: { hoverOnlyWhenSupported: true },
   theme: {
     // ── Shape lock: square corners; only dots and rings are round ─────────
     borderRadius: {
