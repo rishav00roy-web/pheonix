@@ -94,6 +94,11 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* iOS 15 and older can't clip: hide the sideways overflow there instead */
+  @supports not (overflow: clip) {
+    body { overflow-x: hidden; }
+  }
+
   h1, h2, h3 { overflow-wrap: break-word; min-width: 0; text-wrap: balance; font-weight: 400; }
   p { text-wrap: pretty; }
 
@@ -215,7 +220,7 @@
     text-transform: uppercase;
     transition: opacity 300ms ease, background-color 300ms ease;
   }
-  .specimen-inspect:hover { background: var(--ember); }
+  @media (hover: hover) { .specimen-inspect:hover { background: var(--ember); } }
   .specimen-acquire {
     min-height: 44px;
     padding-inline: 16px;
@@ -228,12 +233,13 @@
     text-transform: uppercase;
     transition: border-color 300ms ease, background-color 300ms ease, color 300ms ease;
   }
-  .specimen-acquire:hover { border-color: var(--text); background: rgb(var(--bone-100-rgb) / 0.1); color: var(--text); }
+  @media (hover: hover) { .specimen-acquire:hover { border-color: var(--text); background: rgb(var(--bone-100-rgb) / 0.1); color: var(--text); } }
   .specimen-acquire:active, .specimen-inspect:active { transform: scale(0.97); }
   /* Inspect waits for hover. Touch screens open the piece from the photograph
      itself, so the button stays out of the way there. */
   .specimen-inspect { opacity: 0; }
-  .specimen:hover .specimen-inspect, .specimen-inspect:focus-visible { opacity: 1; }
+  .specimen-inspect:focus-visible { opacity: 1; }
+  @media (hover: hover) { .specimen:hover .specimen-inspect { opacity: 1; } }
   /* Keyboard focus shows it at once, not after the hover fade */
   .specimen-inspect:focus-visible { transition: none; }
   @media (hover: none) {
@@ -245,7 +251,8 @@
 
   /* Product photographs on warm paper: the shops' white studio backdrops
      print as bone, so every piece sits on the same stock as the cassette label */
-  .paper { background: rgb(var(--bone-100-rgb)); }
+  /* isolate: Safari blends the photo against this paper only, even while it animates */
+  .paper { background: rgb(var(--bone-100-rgb)); isolation: isolate; }
   .paper img { mix-blend-mode: multiply; }
 
   /* The ember hairline and its diamond, after the Home hero */
@@ -298,7 +305,8 @@
     transform-origin: left;
     transition: transform 500ms var(--ease-quiet);
   }
-  .rail-tab:hover, .rail-tab[aria-pressed='true'] { color: var(--text); }
+  .rail-tab[aria-pressed='true'] { color: var(--text); }
+  @media (hover: hover) { .rail-tab:hover { color: var(--text); } }
   .rail-tab[aria-pressed='true']::after { transform: scaleX(1); }
   .rail-count { font-family: var(--font-mono); letter-spacing: 0.08em; }
   .rail-tab[aria-pressed='true'] .rail-count { color: rgb(var(--ember-400-rgb)); }
@@ -326,7 +334,7 @@
     transform-origin: right;
     transition: transform 500ms var(--ease-quiet);
   }
-  .text-link:hover::after { transform: scaleX(0); }
+  @media (hover: hover) { .text-link:hover::after { transform: scaleX(0); } }
 
   /* Buttons: an ember block with void text, or a bone hairline outline. Square, flat. */
   .btn {
@@ -346,10 +354,10 @@
     transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, transform 150ms ease;
   }
   .btn-primary { background: var(--ember); border-color: var(--ember); color: var(--void); }
-  .btn-primary:hover { background: rgb(var(--ember-400-rgb)); border-color: rgb(var(--ember-400-rgb)); }
+  @media (hover: hover) { .btn-primary:hover { background: rgb(var(--ember-400-rgb)); border-color: rgb(var(--ember-400-rgb)); } }
   .btn-primary:active, .btn-line:active { transform: scale(0.98); }
   .btn-line { background: transparent; color: var(--text); }
-  .btn-line:hover { background: var(--text); border-color: var(--text); color: var(--void); }
+  @media (hover: hover) { .btn-line:hover { background: var(--text); border-color: var(--text); color: var(--void); } }
   .btn:disabled { cursor: default; }
 
   /* The dock's trapezoid: slanted sides lean in at the top. The obsidian body
