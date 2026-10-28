@@ -1,14 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { TLink } from '../lib/transition';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { gsap, MOTION_OK, useGSAP } from '../lib/smoothScroll';
+import { gsap, MOTION_OK, scrollToTarget, useGSAP } from '../lib/smoothScroll';
 import { entranceDelay } from '../lib/pageTransition';
 import { SplitText } from '../components/SplitText';
 import { PlateViewer } from '../components/PlateViewer';
-import { CassettePlayer } from '../components/CassettePlayer';
+import { CassettePlayer, type CassetteHandle } from '../components/CassettePlayer';
 import { FlexCarousel, type FlexItem } from '../components/FlexCarousel';
 import { Crops, Rule } from '../components/Editorial';
-import { ArrowUpRightIcon, InstagramIcon, WhatsAppIcon, YouTubeIcon } from '../components/icons';
+import { ArrowUpRightIcon, InstagramIcon, PlayIcon, WhatsAppIcon, YouTubeIcon } from '../components/icons';
 import { SOCIAL, YOUTUBE_URL } from '../data/brand';
 import { pad2 } from '../data/products';
 import {
@@ -22,7 +22,7 @@ import {
   SONGS_PHOTO,
   STORY,
   STORY_PHOTO,
-  TRACK,
+  TAPE,
   formatPostDate,
   photoSmall,
   photoSquare,
@@ -34,6 +34,9 @@ import {
 import './AjShield.css';
 
 const NAME = 'AJ Shield';
+
+// Where a song from her list sits on the cassette, or -1
+const tapeIndex = (title: string) => TAPE.findIndex((t) => t.title === title);
 
 // The lookbook plates as carousel cards, captioned with their look and, when known, the post date
 const LOOKS: FlexItem[] = PLATES.map((p) => ({
@@ -53,6 +56,17 @@ export const AjShield: React.FC = () => {
   );
   const scope = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<number | null>(null);
+
+  // The cassette and her songs list share the tape: the list marks the song
+  // that is in, and puts any other on from its own row
+  const deck = useRef<CassetteHandle>(null);
+  const [onTape, setOnTape] = useState({ index: 0, playing: false });
+  const onTrackChange = useCallback((index: number, playing: boolean) => setOnTape({ index, playing }), []);
+  const playOnTape = (i: number) => {
+    deck.current?.playTrack(i);
+    const el = deck.current?.element;
+    if (el) scrollToTarget(el, -Math.max(80, (window.innerHeight - el.offsetHeight) / 2));
+  };
 
   useGSAP(
     () => {
@@ -90,8 +104,8 @@ export const AjShield: React.FC = () => {
       <Opening />
       <Story />
       <Lookbook onOpen={setOpen} />
-      <Music />
-      <Songs />
+      <Music deck={deck} onTrackChange={onTrackChange} />
+      <Songs onTape={onTape} playOnTape={playOnTape} />
       <Follow />
       <PlateViewer plates={PLATES} index={open} firstNo={2} onIndex={setOpen} onClose={() => setOpen(null)} />
     </div>
@@ -234,11 +248,13 @@ function Lookbook({ onOpen }: { onOpen: (i: number) => void }) {
   );
 }
 
-function Music() {
+function Music({ deck, onTrackChange }: { deck: React.Ref<CassetteHandle>; onTrackChange: (index: number, playing: boolean) => void }) {
   return (
     <section aria-labelledby="aj-music" className="frame py-16 lg:py-24 border-t border-obsidian-700">
-      <div className="grid-12 gap-y-10 items-center">
-        <div data-fade className="lg:col-span-5">
+      {/* The copy is set level with the middle of the deck rather than centred on the
+          column, so it stays put when the track list opens under the deck */}
+      <div className="grid-12 gap-y-10 items-start">
+        <div data-fade className="lg:col-span-5 lg:pt-[clamp(72px,calc(20.3vw-131px),136px)]">
           <div className="flex items-center justify-between gap-4 border-b border-obsidian-700 pb-3">
             <span className="mono-label text-chrome-400">Listen</span>
             <span className="mono-label text-ember-400">Rap</span>
@@ -247,7 +263,7 @@ function Music() {
             The music
           </h2>
           <p className="mt-5 text-chrome-400 max-w-[36ch]">
-            Press play for {TRACK.title}. The video and the rest of her tracks are on her YouTube channel.
+            Press play for {TAPE[0].title}, or press the list key on the deck to pick from the {TAPE.length} songs on the tape. The videos are on her YouTube channel.
           </p>
           <a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer" className="btn btn-line mt-8">
             <YouTubeIcon />
@@ -255,7 +271,7 @@ function Music() {
           </a>
         </div>
         <div data-fade className="lg:col-start-7 lg:col-span-6 flex justify-center">
-          <CassettePlayer audioSrc={TRACK.audio} trackTitle={TRACK.title} artist={NAME} artworkSrc={TRACK.art} startAt={TRACK.startAt} />
+          <CassettePlayer ref={deck} tracks={TAPE} artist={NAME} onTrackChange={onTrackChange} />
         </div>
       </div>
     </section>
@@ -284,7 +300,7 @@ function SidePlate({ photo, className = '', sizes }: { photo: AjPhoto; className
   );
 }
 
-function Songs() {
+function Songs({ onTape, playOnTape }: { onTape: { index: number; playing: boolean }; playOnTape: (i: number) => void }) {
   return (
     <section aria-labelledby="aj-songs" className="frame py-20 lg:py-32 border-t border-obsidian-700">
       <div className="grid-12 gap-y-10 items-end">
@@ -322,12 +338,21 @@ function Songs() {
                     {t.with && <span className="text-[15px] text-bone-100">with {t.with}</span>}
                     <span className="text-[15px] text-chrome-400 max-w-[52ch]">{t.note}</span>
                   </div>
-                  {t.title === TRACK.title && (
+                  {(tapeIndex(t.title) >= 0 || t.video) && (
                     <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-                      <span className="mono-label text-ember-400 flex items-center gap-2">
-                        <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-ember-400" />
-                        On the tape above
-                      </span>
+                      {tapeIndex(t.title) === onTape.index ? (
+                        <span className="mono-label text-ember-400 flex items-center gap-2 min-h-11">
+                          <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full bg-ember-400 ${onTape.playing ? 'animate-pulse' : ''}`} />
+                          {onTape.playing ? 'Playing on the tape' : 'On the tape above'}
+                        </span>
+                      ) : (
+                        tapeIndex(t.title) >= 0 && (
+                          <button type="button" onClick={() => playOnTape(tapeIndex(t.title))} className="text-link">
+                            <PlayIcon className="w-4 h-4" />
+                            Play on the tape
+                          </button>
+                        )
+                      )}
                       {t.video && (
                         <a href={t.video} target="_blank" rel="noopener noreferrer" className="text-link">
                           <YouTubeIcon className="w-5 h-5" />

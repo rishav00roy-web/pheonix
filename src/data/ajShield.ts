@@ -132,14 +132,29 @@ export const postLink = (p: AjPhoto) => p.post ?? INSTAGRAM_URL;
 export const formatPostDate = (iso: string) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-/** Her track on the music cassette, with the music video's thumbnail as its art */
-export const TRACK = {
-  title: 'Mone Mone',
-  audio: '/audio/mone-mone.mp3',
-  art: '/aj-shield/mone-mone-art.webp',
-  /** The tape is cued here, past the intro (seconds) */
-  startAt: 13,
-} as const;
+export interface TapeTrack {
+  title: string;
+  /** Who she made it with, as the official upload credits them */
+  with?: string;
+  audio: string;
+  /** Set into the cassette's label and shown on the phone's lock screen */
+  art: string;
+  /** Where the tape is cued, past any intro (seconds) */
+  startAt?: number;
+  /** Printed in the track list, so it reads before the audio loads */
+  length: string;
+}
+
+/** The songs on her cassette, in the order the track list shows them. Mone Mone
+ *  is loaded first, cued past its intro; the other labels carry her photographs. */
+export const TAPE: TapeTrack[] = [
+  { title: 'Mone Mone', audio: '/audio/mone-mone.mp3', art: '/aj-shield/mone-mone-art.webp', startAt: 13, length: '3:25' },
+  { title: 'Dance Rati', with: 'Kid Pallav', audio: '/audio/dance-rati.mp3', art: '/aj-shield/aj-violet-sm.webp', length: '3:36' },
+  { title: 'O Bhai', with: 'VAN M, Lateral', audio: '/audio/o-bhai.mp3', art: '/aj-shield/aj-graffiti-sm.webp', length: '2:51' },
+  { title: 'Nirbasonor Botor', with: 'VAN M, Striker', audio: '/audio/nirbasonor-botor.mp3', art: '/aj-shield/aj-doorway-sm.webp', length: '3:39' },
+  { title: 'Wake Up Again (Last Resort)', with: 'VAN M, Vivek', audio: '/audio/wake-up-again.mp3', art: '/aj-shield/aj-beanie-sm.webp', length: '4:48' },
+  { title: 'Mayday', with: 'VAN M, Vivek', audio: '/audio/mayday.mp3', art: '/aj-shield/aj-red-studio-sm.webp', length: '3:54' },
+];
 
 /** Her story: an opening line, three short chapters and a closing note on the shop */
 export const STORY = {
@@ -151,11 +166,11 @@ export const STORY = {
     },
     {
       title: 'Then it gets melodic',
-      body: 'Mone Mone shows the other side of her: a slow Assamese single with a retro sci-fi video shot by Firefly Films. It’s the song on the tape further down.',
+      body: 'Mone Mone shows the other side of her: a slow Assamese single with a retro sci-fi video shot by Firefly Films. It’s the first song on the tape further down.',
     },
     {
       title: 'What’s new',
-      body: 'Jongholi came out in 2025. Dance Rati, a party track with Kid Pallav, followed in 2026, with a regional feel over heavy hip-hop drums. Most of her collaborations are mixed and mastered at Lucid Recess Studio in Guwahati.',
+      body: 'Dance Rati, a party track with Kid Pallav, came out in 2026, with a regional feel over heavy hip-hop drums. Most of her collaborations are mixed and mastered at Lucid Recess Studio in Guwahati.',
     },
   ],
   close: 'Pheonix is her shop. It isn’t her own label: it carries other people’s brands, picked the way she dresses.',
@@ -198,7 +213,6 @@ export const SONGS: AjTrackGroup[] = [
     label: 'Latest',
     tracks: [
       { title: 'Dance Rati', with: 'Kid Pallav', year: 2026, note: 'A party track. Regional feel, heavy hip-hop drums.' },
-      { title: 'Jongholi', year: 2025, note: 'Her push into a bigger, wider sound.' },
     ],
   },
   {

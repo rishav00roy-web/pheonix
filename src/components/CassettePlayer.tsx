@@ -1,6 +1,7 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { gsap, MOTION_OK, prefersReducedMotion, useGSAP } from '../lib/smoothScroll';
-import { CaptionsIcon, MuteIcon, PauseIcon, PlayIcon, RestartIcon, VolumeIcon } from './icons';
+import type { TapeTrack } from '../data/ajShield';
+import { CaptionsIcon, ListIcon, MuteIcon, PauseIcon, PlayIcon, RestartIcon, VolumeIcon } from './icons';
 import './CassettePlayer.css';
 
 interface CaptionTrack {
@@ -10,19 +11,26 @@ interface CaptionTrack {
   readonly srcLang: string;
 }
 
+/** What the page can ask of the deck: put a song on and play it (call it from a tap, so phones allow the sound) */
+export interface CassetteHandle {
+  playTrack: (index: number) => void;
+  /** The deck itself, to scroll to */
+  element: HTMLElement | null;
+}
+
 interface CassettePlayerProps {
-  audioSrc: string;
-  trackTitle: string;
+  /** The songs on the tape; the first is loaded to begin with. Each one's startAt is
+   *  where it is cued: play, the back key and the end of the track all return there */
+  tracks: readonly TapeTrack[];
   /** Printed above the title on the label */
   artist?: string;
-  /** Cover art set into the label */
-  artworkSrc?: string;
   /** Which side of the tape the label names */
   side?: string;
-  /** Where the tape is cued, in seconds: play, the back key and the end of the track all return here */
-  startAt?: number;
   /** WebVTT captions, printed under the deck while the tape plays */
   captionTracks?: readonly CaptionTrack[];
+  /** Told which song is loaded, and whether it is playing, each time either changes */
+  onTrackChange?: (index: number, playing: boolean) => void;
+  ref?: React.Ref<CassetteHandle>;
   className?: string;
 }
 
@@ -55,16 +63,21 @@ interface DeckKeyProps {
   /** Held down, as play is while the tape runs */
   latched?: boolean;
   play?: boolean;
+  /** For a key that opens something: whether it is open, and its id */
+  expanded?: boolean;
+  controls?: string;
   children: React.ReactNode;
 }
 
 // A piano key: its face is the button, with a top and a side to give it body
-const DeckKey: React.FC<DeckKeyProps> = ({ label, onClick, pressed, latched, play, children }) => (
+const DeckKey: React.FC<DeckKeyProps> = ({ label, onClick, pressed, latched, play, expanded, controls, children }) => (
   <button
     type="button"
     onClick={onClick}
     aria-label={label}
     aria-pressed={pressed}
+    aria-expanded={expanded}
+    aria-controls={controls}
     className={`deck-key ${play ? 'deck-key-play' : ''} ${latched ? 'is-latched' : ''}`}
   >
     <span aria-hidden="true" className="deck-key-top" />
@@ -79,16 +92,28 @@ const DeckKey: React.FC<DeckKeyProps> = ({ label, onClick, pressed, latched, pla
 // real deck), piano keys on the top edge that sink when pressed and latch
 // while they hold, a tape counter and a seek groove on the front. The deck
 // leans toward the pointer and turns a little as the page scrolls past it.
+// The list key opens the tape's track list under the deck; picking a song
+// lifts the cassette out and drops it back in with the new label.
 export const CassettePlayer: React.FC<CassettePlayerProps> = ({
-  audioSrc,
-  trackTitle,
+  tracks,
   artist,
-  artworkSrc,
   side = 'A',
-  startAt = 0,
   captionTracks,
+  onTrackChange,
+  ref,
   className = '',
 }) => {
+  // The song in the player, and the one printed on the label: the label
+  // changes while the cassette is out of sight, a moment after the sound does
+  const [index, setIndex] = useState(0);
+  const [labelIndex, setLabelIndex] = useState(0);
+  const [listOpen, setListOpen] = useState(false);
+  const track = tracks[index];
+  const startAt = track.startAt ?? 0;
+  const trackTitle = tracks[labelIndex].title;
+  const artworkSrc = tracks[labelIndex].art;
+  const listId = useId();
+  const list = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const tape = useRef<HTMLDivElement>(null);
@@ -103,6 +128,15 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
   const hasCaptions = !!captionTracks?.length;
   const [captionsOn, setCaptionsOn] = useState(() => captionTracks?.some((t) => t.default) ?? false);
   const [cue, setCue] = useState('');
+
+  // The first song goes in once; every later one is put in by load() below
+  useLayoutEffect(() => {
+    const a = audio.current;
+    if (a && !a.getAttribute('src')) a.src = tracks[0].audio;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => onTrackChange?.(index, playing), [index, playing, onTrackChange]);
 
   const progress = duration > 0 ? Math.min(1, time / duration) : 0;
   const [packL, packR] = packs(progress);
@@ -206,11 +240,19 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
   useEffect(() => {
     if (!playing || !('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: trackTitle,
-      artist,
-      artwork: artworkSrc ? [{ src: artworkSrc }] : [],
+      title: track.title,
+      artist: track.with ? `${artist} with ${track.with}` : artist,
+      artwork: [{ src: track.art }],
     });
-  }, [playing, trackTitle, artist, artworkSrc]);
+    // The lock screen's skip buttons step through the tape
+    try {
+      navigator.mediaSession.setActionHandler('nexttrack', () => load((index + 1) % tracks.length, true));
+      navigator.mediaSession.setActionHandler('previoustrack', () => load((index - 1 + tracks.length) % tracks.length, true));
+    } catch {
+      // a browser without track actions keeps its own buttons
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing, track, artist]);
 
   // Once the length is known, cue the tape to its start point if it hasn't moved yet
   const readDuration = (a: HTMLAudioElement) => {
@@ -251,6 +293,53 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
   const toggleMute = () => {
     if (audio.current) audio.current.muted = !audio.current.muted;
   };
+
+  // Put another song in. The sound changes at once, inside the tap, so phones
+  // let it play; the cassette lifts out, takes its new label, and drops back in.
+  const load = (i: number, play: boolean) => {
+    const a = audio.current;
+    const next = tracks[i];
+    if (!a || !next) return;
+    if (i === index) {
+      if (play && a.paused) toggle();
+      return;
+    }
+    a.src = next.audio;
+    setIndex(i);
+    setTime(next.startAt ?? 0);
+    setDuration(0);
+    setFailed(false);
+    if (play) {
+      a.play().catch((e: DOMException) => {
+        if (e.name !== 'AbortError') setFailed(true);
+      });
+    }
+    const el = tape.current;
+    if (!el || prefersReducedMotion) {
+      setLabelIndex(i);
+      return;
+    }
+    gsap
+      .timeline()
+      .to(el, { yPercent: -112, duration: 0.45, ease: 'power3.in', overwrite: true })
+      .add(() => setLabelIndex(i))
+      .to(el, { yPercent: 0, duration: 0.75, ease: 'power3.out', delay: 0.05 });
+  };
+
+  useImperativeHandle(ref, () => ({ playTrack: (i: number) => load(i, true), element: stage.current }));
+
+  // The list slides open under the deck, and closes the same way
+  useEffect(() => {
+    const el = list.current;
+    if (!el) return;
+    if (listOpen) {
+      el.hidden = false;
+      if (!prefersReducedMotion) gsap.fromTo(el, { height: 0, opacity: 0 }, { height: 'auto', opacity: 1, duration: 0.55, ease: 'power3.out', overwrite: true });
+    } else if (!el.hidden) {
+      if (prefersReducedMotion) el.hidden = true;
+      else gsap.to(el, { height: 0, opacity: 0, duration: 0.4, ease: 'power3.in', overwrite: true, onComplete: () => { el.hidden = true; } });
+    }
+  }, [listOpen]);
 
   const seek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const a = audio.current;
@@ -293,6 +382,11 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
               <DeckKey label="Mute" onClick={toggleMute} pressed={muted} latched={muted}>
                 {muted ? <MuteIcon className="deck-key-icon" /> : <VolumeIcon className="deck-key-icon" />}
               </DeckKey>
+              {tracks.length > 1 && (
+                <DeckKey label="Track list" onClick={() => setListOpen((o) => !o)} expanded={listOpen} controls={listId} latched={listOpen}>
+                  <ListIcon className="deck-key-icon" />
+                </DeckKey>
+              )}
               {hasCaptions && (
                 <DeckKey label="Captions" onClick={() => setCaptionsOn((on) => !on)} pressed={captionsOn} latched={captionsOn}>
                   <CaptionsIcon className="deck-key-icon" />
@@ -376,15 +470,20 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
           </div>
         </div>
 
+        {/* Its src is set by hand (see load), so a re-render never reloads the song mid-play */}
         <audio
           ref={audio}
-          src={audioSrc}
           preload="metadata"
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           onEnded={(e) => {
-            setPlaying(false);
-            cueUp(e.currentTarget);
+            // The next song plays on; after the last, the tape goes back to the first and stops
+            if (index < tracks.length - 1) load(index + 1, true);
+            else if (index > 0) load(0, false);
+            else {
+              setPlaying(false);
+              cueUp(e.currentTarget);
+            }
           }}
           onDurationChange={(e) => readDuration(e.currentTarget)}
           onLoadedMetadata={(e) => readDuration(e.currentTarget)}
@@ -398,6 +497,39 @@ export const CassettePlayer: React.FC<CassettePlayerProps> = ({
         </audio>
       </div>
       {failed && <p className="deck-note">The track couldn’t load. It’s on her YouTube channel.</p>}
+
+      {/* The track list, printed like the card inside a cassette case */}
+      {tracks.length > 1 && (
+        <div ref={list} id={listId} hidden className="tape-list">
+          <div className="tape-list-head">
+            <span>Side {side}</span>
+            <span className="num">{String(tracks.length).padStart(2, '0')} songs</span>
+          </div>
+          <ol>
+            {tracks.map((t, i) => {
+              const on = i === index;
+              return (
+                <li key={t.audio}>
+                  <button type="button" onClick={() => load(i, true)} aria-current={on ? 'true' : undefined} className={`tape-list-row ${on ? 'is-on' : ''}`}>
+                    <span className="tape-list-no num">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="tape-list-name">
+                      <span className="tape-list-title">{t.title}</span>
+                      {t.with && <span className="tape-list-with">with {t.with}</span>}
+                    </span>
+                    {on && playing ? (
+                      <span className="tape-list-eq" role="img" aria-label="Playing">
+                        <span /><span /><span />
+                      </span>
+                    ) : (
+                      <span className="tape-list-len num">{t.length}</span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
       {hasCaptions && captionsOn && <p className="deck-cue">{cue}</p>}
     </div>
   );
