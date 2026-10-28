@@ -363,7 +363,10 @@
   gap: 8px;
   transform-style: preserve-3d;
   transform: translateZ(18px);
+  /* The row shares its plane with the keys, so in 3D it can win the hit test: only the keys take taps */
+  pointer-events: none;
 }
+.deck-keys .deck-key { pointer-events: auto; }
 /* The slot the keys sink into, laid flat on the top a hair above it */
 .deck-keys::before {
   content: '';
@@ -375,6 +378,8 @@
   background: var(--void);
   transform-origin: top;
   transform: translateZ(4px) rotateX(-90deg);
+  /* Laid in 3D, the slot can sit in front of a key as the deck tilts: let taps through to the key */
+  pointer-events: none;
 }
 
 .deck-key {
@@ -495,6 +500,8 @@
   width: 76px;
   height: 38px;
   object-fit: cover;
+  /* Her portraits are tall: keep the face in the strip */
+  object-position: 50% 28%;
   border: 1px solid rgb(var(--void-rgb) / 0.16);
 }
 .tape-artist,
@@ -641,8 +648,79 @@
 }
 .deck-cue { min-height: 1.5em; color: rgb(var(--bone-100-rgb)); }
 
+/* The track list: the card folded inside a cassette case, slid out under the deck.
+   The song in the player is lit ember; while it plays, three bars move in place of its length. */
+.tape-list {
+  overflow: hidden;
+  margin-top: 20px;
+  border: 1px solid rgb(var(--obsidian-700-rgb));
+  background:
+    repeating-linear-gradient(0deg, transparent 0 51px, rgb(var(--bone-100-rgb) / 0.025) 51px 52px),
+    rgb(var(--obsidian-950-rgb));
+}
+.tape-list-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(var(--obsidian-700-rgb));
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--chrome-400-rgb));
+}
+.tape-list li + li { border-top: 1px solid rgb(var(--obsidian-700-rgb) / 0.6); }
+.tape-list-row {
+  display: grid;
+  grid-template-columns: 2.2em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 16px;
+  text-align: left;
+  color: rgb(var(--bone-100-rgb));
+  transition: background-color 200ms ease, color 200ms ease;
+}
+@media (hover: hover) { .tape-list-row:hover { background: rgb(var(--bone-100-rgb) / 0.04); } }
+.tape-list-row:active { background: rgb(var(--bone-100-rgb) / 0.07); }
+.tape-list-row:focus-visible { outline: 2px solid var(--ember); outline-offset: -2px; }
+.tape-list-no,
+.tape-list-len {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: rgb(var(--chrome-400-rgb));
+}
+.tape-list-name { display: flex; flex-direction: column; min-width: 0; }
+.tape-list-title {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.tape-list-with { margin-top: 2px; font-size: 13px; color: rgb(var(--chrome-400-rgb)); }
+.tape-list-row.is-on .tape-list-no,
+.tape-list-row.is-on .tape-list-title { color: rgb(var(--ember-400-rgb)); }
+
+.tape-list-eq { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
+.tape-list-eq span {
+  width: 2px;
+  height: 100%;
+  background: rgb(var(--ember-400-rgb));
+  transform-origin: bottom;
+  animation: tape-eq 0.9s ease-in-out infinite;
+}
+.tape-list-eq span:nth-child(2) { animation-delay: -0.3s; }
+.tape-list-eq span:nth-child(3) { animation-delay: -0.6s; }
+@keyframes tape-eq {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .deck-key,
   .deck-key::after,
   .deck-led { transition: none; }
+  .tape-list-eq span { animation: none; transform: scaleY(0.7); }
 }

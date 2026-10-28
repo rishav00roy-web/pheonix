@@ -128,6 +128,14 @@ export const MuteIcon: React.FC<IconProps> = (p) => (
     <path d="M15.8 9.8l4.4 4.4M20.2 9.8l-4.4 4.4" />
   </Line>
 );
+export const ListIcon: React.FC<IconProps> = (p) => (
+  <Line {...p}>
+    <path d="M9 7h11M9 12h11M9 17h11" />
+    <circle cx="4.6" cy="7" r="0.9" fill="currentColor" />
+    <circle cx="4.6" cy="12" r="0.9" fill="currentColor" />
+    <circle cx="4.6" cy="17" r="0.9" fill="currentColor" />
+  </Line>
+);
 export const CaptionsIcon: React.FC<IconProps> = (p) => (
   <Line {...p}>
     <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" />
