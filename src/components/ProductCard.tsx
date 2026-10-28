@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Product } from '../data/products';
 import { categoryLabel, formatAmount, pad2, PRODUCTS, smallShot } from '../data/products';
 import { useCart } from '../lib/bag';
@@ -31,6 +31,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, large = false
   const no = pad2(PRODUCTS.indexOf(product) + 1);
   const href = `/p/${product.id}`;
 
+  // The Shop turns a tile into a feature tile and back as the filter changes,
+  // which swaps the photo between its small and full sizes. Keep showing the
+  // one on screen until the other has loaded and decoded, so it never blanks.
+  const want = src(main);
+  const [shot, setShot] = useState(want);
+  useEffect(() => {
+    if (want === shot) return;
+    let live = true;
+    const next = new Image();
+    next.src = want;
+    next.decode().catch(() => {}).then(() => live && setShot(want));
+    return () => {
+      live = false;
+    };
+  }, [want, shot]);
+
   const acquire = () => {
     add(product, product.sizes[0], product.colors[0]?.name ?? '');
     open();
@@ -44,7 +60,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, large = false
       <div data-card-media data-reveal className="paper relative aspect-[3/4] overflow-hidden">
         <TLink to={href} tabIndex={-1} aria-hidden="true" className="absolute inset-0">
           <img
-            src={src(main)}
+            src={shot}
             alt=""
             loading={priority ? 'eager' : 'lazy'}
             fetchPriority={priority ? 'high' : undefined}

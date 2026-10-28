@@ -14,6 +14,15 @@ const seen = () => {
   }
 };
 
+// The pages the card may open on
+const HOSTS = ['/', '/shop'];
+
+// Home's hero is the first thing a visitor sees; the card waits until most of it has gone
+const pastHero = () => {
+  const hero = document.getElementById('hero-section');
+  return !hero || window.scrollY > hero.offsetTop + hero.offsetHeight * 0.6;
+};
+
 const STEPS = [
   { Icon: HangerIcon, name: 'Shop', note: 'every piece on the rail' },
   { Icon: BagIcon, name: 'Bag', note: 'the pieces you pick' },
@@ -42,11 +51,26 @@ export const StartHint: React.FC = () => {
     gsap.to(el, { autoAlpha: 0, y: 12, duration: 0.3, ease: 'power2.in', onComplete: () => setShow(false) });
   };
 
-  // Wait for the hero and the dock to arrive, then come in
+  // Wait for the hero and the dock to arrive, then come in. Only Home and Shop
+  // get the card (on a product page it would sit over Add to bag), and Home
+  // holds it until the hero has mostly scrolled away, so it never covers the crest.
   useEffect(() => {
-    if (seen()) return;
-    const t = setTimeout(() => setShow(true), (entranceDelay() + 2.4) * 1000);
-    return () => clearTimeout(t);
+    if (seen() || !HOSTS.includes(firstPath.current)) return;
+    let armed = false;
+    const tryShow = () => {
+      if (!armed || window.location.pathname !== firstPath.current || !pastHero()) return;
+      window.removeEventListener('scroll', tryShow);
+      setShow(true);
+    };
+    const t = setTimeout(() => {
+      armed = true;
+      tryShow();
+    }, (entranceDelay() + 2.4) * 1000);
+    window.addEventListener('scroll', tryShow, { passive: true });
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('scroll', tryShow);
+    };
   }, []);
 
   // Moving to another page means the dock was found: retire the card

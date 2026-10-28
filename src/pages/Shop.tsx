@@ -31,6 +31,7 @@ export const Shop: React.FC = () => {
   const cat: Filter = isFilter(raw) ? raw : 'all';
   const scope = useRef<HTMLDivElement>(null);
   const flipState = useRef<Flip.FlipState | null>(null);
+  const gridHeight = useRef(0);
 
   const visible = PRODUCTS.filter((p) => cat === 'all' || p.category === cat);
   const position = new Map(visible.map((p, i) => [p.id, i]));
@@ -40,6 +41,7 @@ export const Shop: React.FC = () => {
     if (id === cat) return;
     if (!prefersReducedMotion && scope.current) {
       flipState.current = Flip.getState(scope.current.querySelectorAll('[data-tile]'));
+      gridHeight.current = scope.current.querySelector<HTMLElement>('[data-grid]')?.offsetHeight ?? 0;
     }
     setParams(id === 'all' ? {} : { cat: id }, { preventScrollReset: true });
   };
@@ -50,6 +52,17 @@ export const Shop: React.FC = () => {
     const state = flipState.current;
     if (!state) return;
     flipState.current = null;
+    // Flip lifts every tile out of the flow while it runs, which would collapse
+    // the grid for a moment: the footer flashes up and the page jumps. Hold the
+    // grid at the taller of its two heights until the tiles land.
+    const grid = scope.current?.querySelector<HTMLElement>('[data-grid]');
+    if (grid) grid.style.minHeight = `${Math.max(gridHeight.current, grid.offsetHeight)}px`;
+    // The glide is every tile's entrance now. A tile whose rise-in has not run
+    // yet would fire it the moment it lands and blink out, so retire them all.
+    const cards = gsap.utils.toArray<Element>('[data-tile] [data-card]', scope.current);
+    ScrollTrigger.getAll().forEach((st) => cards.includes(st.trigger as Element) && st.kill());
+    gsap.killTweensOf(cards);
+    gsap.set(cards, { clearProps: 'opacity,transform,translate' });
     Flip.from(state, {
       duration: 0.7,
       ease: 'power3.inOut',
@@ -58,7 +71,10 @@ export const Shop: React.FC = () => {
       prune: true,
       onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, delay: 0.25 }),
       onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.9, duration: 0.35 }),
-      onComplete: () => queueRefresh(0),
+      onComplete: () => {
+        if (grid) grid.style.minHeight = '';
+        queueRefresh(0);
+      },
     });
   }, [cat]);
 
@@ -129,7 +145,8 @@ export const Shop: React.FC = () => {
       <section aria-label="Pieces" className="pb-[var(--section)]">
         {/* Filter: an index of the rail that sticks to the top for the length of the grid */}
         <div className="sticky top-0 z-30 bg-void/90 backdrop-blur-md border-y border-obsidian-700">
-          <div className="frame flex items-center justify-between gap-6">
+          {/* The right edge stays clear for the menu button, which floats over this bar once it sticks */}
+          <div className="frame flex items-center justify-between gap-6 pr-[calc(var(--gutter)+56px)] lg:pr-[calc(var(--gutter)+64px)]">
             <ul className="flex gap-5 lg:gap-9 overflow-x-auto no-scrollbar -mx-1 px-1 pr-3" aria-label="Filter by category">
               {CATEGORIES.map((c) => (
                 <li key={c.id} className="shrink-0">
