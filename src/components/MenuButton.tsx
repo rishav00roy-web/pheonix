@@ -25,7 +25,7 @@ const threshold = () => {
 // looks for a menu at the top.
 export const MenuButton: React.FC = () => {
   const { pathname } = useLocation();
-  const { count, open: openBag } = useCart();
+  const { count, open: openBag, isOpen: bagOpen } = useCart();
   const [shown, setShown] = useState(false);
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
@@ -49,13 +49,14 @@ export const MenuButton: React.FC = () => {
   useEffect(() => {
     const el = btn.current;
     if (!el) return;
-    const on = shown || open;
+    // The open bag has its own close button in this corner: step out of its way
+    const on = (shown || open) && !bagOpen;
     if (prefersReducedMotion) {
       gsap.set(el, { autoAlpha: on ? 1 : 0 });
       return;
     }
     gsap.to(el, { autoAlpha: on ? 1 : 0, y: on ? 0 : -12, duration: on ? 0.45 : 0.3, ease: on ? 'power3.out' : 'power2.in', overwrite: true });
-  }, [shown, open]);
+  }, [shown, open, bagOpen]);
 
   // A new page closes the menu
   useEffect(() => setOpen(false), [pathname]);
