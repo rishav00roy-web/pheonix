@@ -23,3 +23,29 @@ export const SOCIAL = [
   { label: 'YouTube', href: YOUTUBE_URL },
   { label: 'WhatsApp', href: whatsappLink() },
 ] as const;
+
+/** The shop's door: where it is, when it's open, and the drop list. The
+ *  footer reads it all from here. Fields marked [Placeholder] wait on the
+ *  real details from the owner. */
+export const STORE = {
+  /** [Placeholder] street line: send the real address */
+  street: 'Street address to come',
+  area: 'Jorhat, Assam',
+  /** [Placeholder] Google Maps link for the address; null hides "Get directions" */
+  mapsUrl: null as string | null,
+  /** [Placeholder] opening hours, one row per day group */
+  hours: [
+    { days: 'Mon – Sat', time: 'Hours to come' },
+    { days: 'Sunday', time: 'Hours to come' },
+  ],
+  /** Orders and questions both go through WhatsApp */
+  replyNote: 'Orders and questions on WhatsApp, every day.',
+  dropList: {
+    title: 'Get the next drop first',
+    body: 'New pieces land in small runs. Leave your email and we’ll write before a drop goes live. No spam, unsubscribe any time.',
+    /** [Placeholder] where sign-ups are sent: a Formspree form URL
+     *  (https://formspree.io/f/xxxx) or FormSubmit (https://formsubmit.co/ajax/you@mail.com).
+     *  Until it's set, the form says sign-ups open soon and sends nothing. */
+    endpoint: null as string | null,
+  },
+} as const;
