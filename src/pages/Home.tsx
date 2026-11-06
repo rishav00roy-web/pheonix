@@ -101,9 +101,9 @@ function Edit() {
             <p data-fade className="mt-5 max-w-[34ch] text-chrome-400">
               Four pieces on the rail right now, picked in AJ’s style.
             </p>
-            <div data-fade className="mt-6">
-              <TLink to="/shop" className="text-link">
-                View all pieces
+            <div data-fade className="mt-8">
+              <TLink to="/shop" className="btn btn-primary">
+                Shop the collection
               </TLink>
             </div>
           </li>
